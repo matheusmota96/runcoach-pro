@@ -1,0 +1,29 @@
+{
+  "athlete": {
+    "name": "Mota",
+    "height": 1.82,
+    "weight": 78,
+    "bf": 18.8,
+    "tmb": 1687,
+    "phone": "+5561982550045"
+  },
+  "logs": [
+    {
+      "id": 1,
+      "date": "2026-03-26",
+      "type": "corrida",
+      "distance": 6.23,
+      "time": 37.38,
+      "pace": "6:00",
+      "paceNum": 6,
+      "feeling": "moderado",
+      "recovery": [
+        "gelo"
+      ],
+      "notes": "Primeiro treino focado para meia maratona. Banheira de gelo apos treino."
+    }
+  ],
+  "meals": [],
+  "nextId": 2,
+  "nextMealId": 1
+}
