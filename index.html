@@ -473,6 +473,9 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
       <!-- Refeicao Form -->
       <div id="logSubRefeicao" style="display:none;">
         <div class="log-form">
+          <!-- Date indicator for meal registration -->
+          <div id="mealDateIndicator" style="display:none;background:rgba(249,115,22,0.15);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--accent);text-align:center;font-weight:600;"></div>
+
           <div class="form-grid">
             <div class="form-row"><div class="form-label">Refeicao</div>
               <select class="form-input" id="mealType">
@@ -897,6 +900,13 @@ function nutriSelectDay(dateStr) {
   nutriSelectedDate = dateStr;
   renderNutrition();
 }
+function progressSelectDay(dateStr) {
+  if (dateStr > todayStr()) return;
+  // Navigate to nutrição tab with that day selected
+  nutriSelectedDate = dateStr;
+  switchTab('nutri', document.querySelectorAll('.nav-item')[1]);
+  renderNutrition();
+}
 
 // Calendar strip helper
 function renderCalStrip(containerId, selectedDate, onClickFn) {
@@ -1115,10 +1125,13 @@ function cancelEdit() { editingId=null; document.getElementById('logSubmitBtn').
 function resetForm() { ['logDistance','logTime','logNotes','logPace'].forEach(id=>{document.getElementById(id).value='';}); document.getElementById('logDate').value=todayStr(); selectedFeeling=null; selectedRecovery=[]; document.querySelectorAll('.feeling-btn').forEach(b=>b.classList.remove('selected')); }
 
 // ===== SUBMIT MEAL =====
+// Track which date we're registering a meal for
+let mealRegisterDate = null;
+
 function submitMeal() {
   const entry = {
     id: editingMealId || DATA.nextMealId++,
-    date: todayStr(),
+    date: mealRegisterDate || nutriSelectedDate || todayStr(),
     time: document.getElementById('mealTime').value || '',
     type: document.getElementById('mealType').value,
     desc: document.getElementById('mealDesc').value,
@@ -1127,8 +1140,17 @@ function submitMeal() {
     cal: parseInt(document.getElementById('mealCal').value)||0,
     photo: capturedPhoto || null
   };
-  if(editingMealId) { const idx=DATA.meals.findIndex(m=>m.id===editingMealId); if(idx>=0) DATA.meals[idx]=entry; editingMealId=null; document.getElementById('mealCancelBtn').style.display='none'; showToast('Refeicao atualizada!'); }
-  else { DATA.meals.push(entry); showToast('Refeicao registrada!'); }
+  if(editingMealId) {
+    const idx=DATA.meals.findIndex(m=>m.id===editingMealId);
+    if(idx>=0) { entry.date = DATA.meals[idx].date; DATA.meals[idx]=entry; }
+    editingMealId=null; document.getElementById('mealCancelBtn').style.display='none'; showToast('Refeicao atualizada!');
+  } else {
+    // Check for duplicate: same date + type + desc
+    const isDupe = DATA.meals.some(m => m.date===entry.date && m.type===entry.type && m.desc===entry.desc && m.protein===entry.protein);
+    if (isDupe) { showToast('Refeicao ja registrada!'); mealRegisterDate=null; return; }
+    DATA.meals.push(entry); showToast('Registrado!');
+  }
+  mealRegisterDate = null;
   saveData(); resetMealForm(); updateUI(); renderNutrition(); switchTab('nutri',document.querySelectorAll('.nav-item')[1]);
 }
 function editMeal(id) {
@@ -1143,15 +1165,31 @@ function editMeal(id) {
   switchTab('log',document.querySelectorAll('.nav-item')[2]); switchLogSub('refeicao');
 }
 function cancelMealEdit() { editingMealId=null; document.getElementById('mealCancelBtn').style.display='none'; resetMealForm(); }
-function resetMealForm() { ['mealDesc','mealProtein','mealCarb','mealCal','calcGrams'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); document.getElementById('mealTime').value=''; document.getElementById('calcFood').value=''; const cr=document.getElementById('calcResult');if(cr)cr.style.display='none'; capturedPhoto=null; document.getElementById('photoPreview').style.display='none'; document.getElementById('photoBtn').innerHTML='&#128247; Tirar Foto / Escolher Imagem'; }
+function resetMealForm() { ['mealDesc','mealProtein','mealCarb','mealCal','calcGrams'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); document.getElementById('mealTime').value=''; document.getElementById('calcFood').value=''; const cr=document.getElementById('calcResult');if(cr)cr.style.display='none'; mealRegisterDate=null; const ind=document.getElementById('mealDateIndicator');if(ind)ind.style.display='none'; capturedPhoto=null; document.getElementById('photoPreview').style.display='none'; document.getElementById('photoBtn').innerHTML='&#128247; Tirar Foto / Escolher Imagem'; }
 
 function logMealFromSlot(mealId) {
+  // Remember which date we're registering for
+  mealRegisterDate = nutriSelectedDate || todayStr();
   document.getElementById('mealType').value=mealId;
   const slot=MEAL_PLAN.find(m=>m.id===mealId);
   if(slot&&slot.defaultTime) document.getElementById('mealTime').value=slot.defaultTime;
   renderPresets();
   switchTab('log',document.querySelectorAll('.nav-item')[2]);
   switchLogSub('refeicao');
+  // Show date indicator
+  updateMealDateIndicator();
+}
+function updateMealDateIndicator() {
+  const ind = document.getElementById('mealDateIndicator');
+  const targetDate = mealRegisterDate || nutriSelectedDate || todayStr();
+  if (targetDate !== todayStr()) {
+    const d = new Date(targetDate+'T12:00:00');
+    const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    ind.textContent = 'Registrando para: ' + d.getDate() + ' ' + months[d.getMonth()];
+    ind.style.display = 'block';
+  } else {
+    ind.style.display = 'none';
+  }
 }
 function updateMealTimeFromType() {
   const slot=MEAL_PLAN.find(m=>m.id===document.getElementById('mealType').value);
@@ -1370,7 +1408,7 @@ function updateUI() {
   document.getElementById('totalMeals').textContent = DATA.meals.length;
 
   // Calendar strip in Evolucao
-  renderCalStrip('progressCalStrip', todayStr(), 'nutriSelectDay');
+  renderCalStrip('progressCalStrip', todayStr(), 'progressSelectDay');
 
   // History - grouped by day
   const hl=document.getElementById('historyList'); hl.innerHTML='';
