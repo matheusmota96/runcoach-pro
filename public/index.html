@@ -22,7 +22,7 @@ body {
   background: var(--bg); color: var(--text);
   min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased;
 }
-.app { max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
+.app { max-width: 480px; margin: 0 auto; padding-bottom: 80px; position:relative; z-index:1; }
 
 /* Header */
 .header {
@@ -274,12 +274,13 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
   width:100%; max-width:480px; background:var(--bg2);
   border-top:1px solid var(--bg3); display:flex;
-  padding:6px 0; padding-bottom:max(6px, env(safe-area-inset-bottom)); z-index:100;
+  padding:8px 0; padding-bottom:max(8px, env(safe-area-inset-bottom));
+  z-index:9999; box-shadow:0 -2px 10px rgba(0,0,0,0.3);
 }
 .nav-item {
   flex:1; display:flex; flex-direction:column; align-items:center;
   padding:6px 2px; cursor:pointer; color:var(--text3); transition:color 0.2s;
-  border:none; background:none; font-family:inherit;
+  border:none; background:none; font-family:inherit; -webkit-tap-highlight-color:transparent;
 }
 .nav-item.active { color:var(--accent); }
 .nav-icon { font-size:18px; margin-bottom:2px; }
@@ -287,13 +288,45 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 
 /* Toast */
 .toast {
-  position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(100px);
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(200px);
   background:var(--green); color:white; padding:12px 24px; border-radius:12px;
-  font-size:14px; font-weight:600; z-index:500; transition:transform 0.3s; white-space:nowrap;
+  font-size:14px; font-weight:600; z-index:10000; transition:transform 0.3s; white-space:nowrap;
+  pointer-events:none; opacity:0;
 }
-.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
 .fade-in { animation:fadeIn 0.4s ease-out; }
+
+/* Date Navigator */
+.date-nav { display:flex; align-items:center; justify-content:space-between; background:var(--bg2); border-radius:12px; padding:8px 12px; margin-bottom:14px; }
+.date-nav-btn { background:none; border:none; color:var(--accent); font-size:22px; padding:6px 10px; cursor:pointer; border-radius:8px; }
+.date-nav-btn:active { background:rgba(249,115,22,0.15); }
+.date-nav-btn:disabled { color:var(--bg3); }
+.date-nav-label { font-size:14px; font-weight:700; color:var(--text); text-align:center; }
+.date-nav-sub { font-size:11px; color:var(--text3); }
+
+/* Calendar Strip */
+.cal-strip { display:flex; gap:4px; overflow-x:auto; padding:4px 0 8px; margin-bottom:10px; -webkit-overflow-scrolling:touch; }
+.cal-strip::-webkit-scrollbar { display:none; }
+.cal-day { min-width:44px; padding:8px 4px; text-align:center; border-radius:10px; cursor:pointer; background:var(--bg); border:1px solid transparent; flex-shrink:0; }
+.cal-day.today { border-color:var(--accent); }
+.cal-day.selected { background:var(--accent); color:white; }
+.cal-day.has-data { position:relative; }
+.cal-day.has-data::after { content:''; position:absolute; bottom:4px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--green); }
+.cal-day.has-meal::before { content:''; position:absolute; bottom:4px; left:calc(50% + 5px); transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--purple); }
+.cal-day-name { font-size:9px; color:var(--text3); text-transform:uppercase; }
+.cal-day-num { font-size:15px; font-weight:700; margin-top:2px; }
+.cal-day.selected .cal-day-name { color:rgba(255,255,255,0.7); }
+
+/* History Day Card */
+.history-day-card { background:var(--bg2); border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid var(--bg3); }
+.history-day-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.history-day-date { font-size:14px; font-weight:700; }
+.history-day-badges { display:flex; gap:6px; }
+.history-day-badge { font-size:10px; padding:3px 8px; border-radius:6px; font-weight:600; }
+.history-day-meals { display:flex; flex-direction:column; gap:6px; }
+.history-meal-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-bottom:1px solid var(--bg3); }
+.history-meal-row:last-child { border-bottom:none; }
 </style>
 </head>
 <body>
@@ -359,9 +392,22 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 
   <!-- ==================== TAB: NUTRITION ==================== -->
   <div class="tab-content" id="tab-nutri">
+    <!-- Date Navigator -->
+    <div class="section" style="padding-bottom:0;">
+      <div class="date-nav">
+        <button class="date-nav-btn" onclick="nutriChangeDay(-1)">&#9664;</button>
+        <div style="text-align:center;cursor:pointer;" onclick="nutriGoToday()">
+          <div class="date-nav-label" id="nutriDateLabel">Hoje</div>
+          <div class="date-nav-sub" id="nutriDateSub">27/03/2026</div>
+        </div>
+        <button class="date-nav-btn" id="nutriNextBtn" onclick="nutriChangeDay(1)">&#9654;</button>
+      </div>
+      <div class="cal-strip" id="nutriCalStrip"></div>
+    </div>
+
     <!-- Daily Macro Summary -->
-    <div class="section">
-      <div class="section-title"><span>&#127860;</span> NUTRICAO HOJE</div>
+    <div class="section" style="padding-top:8px;">
+      <div class="section-title"><span>&#127860;</span> <span id="nutriSectionTitle">NUTRICAO HOJE</span></div>
       <div id="nutriDaySummary"></div>
     </div>
 
@@ -454,7 +500,57 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
           </div>
 
           <div class="form-row"><div class="form-label">O que voce comeu?</div>
-            <textarea class="form-input" id="mealDesc" placeholder="Ex: cuscuz + 2 ovos + cafe&#10;Ou: arroz 180g + frango 140g + salada"></textarea>
+            <textarea class="form-input" id="mealDesc" placeholder="Ex: cuscuz + 2 ovos + cafe&#10;Ou: frango 70g + arroz 180g"></textarea>
+          </div>
+
+          <!-- Smart Calculator -->
+          <div class="form-row">
+            <div class="form-label">&#129518; Calculadora de Macros</div>
+            <div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:8px;">
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select class="form-input" id="calcFood" style="flex:2;padding:10px;font-size:13px;">
+                  <option value="">Escolha o alimento...</option>
+                  <optgroup label="Proteinas">
+                    <option value="frango">Frango (peito)</option>
+                    <option value="carne_boi">Carne bovina</option>
+                    <option value="carne_sol">Carne de sol</option>
+                    <option value="hamburguer">Hamburguer (carne)</option>
+                    <option value="peixe">Peixe/Salmao</option>
+                    <option value="ovo">Ovo (unidade)</option>
+                    <option value="omelete3">Omelete 3 ovos</option>
+                    <option value="whey">ISO100 (scoop)</option>
+                    <option value="queijo">Queijo mussarela</option>
+                    <option value="iogurte">Iogurte grego</option>
+                  </optgroup>
+                  <optgroup label="Carboidratos">
+                    <option value="arroz">Arroz branco</option>
+                    <option value="cuscuz">Cuscuz</option>
+                    <option value="tapioca">Tapioca</option>
+                    <option value="pao">Pao frances/integral</option>
+                    <option value="batata_doce">Batata doce</option>
+                    <option value="mandioca">Mandioca</option>
+                    <option value="banana">Banana (unidade)</option>
+                  </optgroup>
+                  <optgroup label="Pratos prontos">
+                    <option value="hamburguer_completo">Hamburguer completo (pao+carne+queijo)</option>
+                    <option value="sanduiche_frango">Sanduiche de frango</option>
+                    <option value="sushi_combo">Combo sushi (10 pecas)</option>
+                    <option value="sashimi_combo">Combo sashimi (10 fatias)</option>
+                    <option value="temaki">Temaki</option>
+                    <option value="rodizio_japones">Rodizio japones (estimativa)</option>
+                  </optgroup>
+                  <optgroup label="Outros">
+                    <option value="feijao">Feijao</option>
+                    <option value="salada">Salada verde</option>
+                    <option value="cafe_leite">Cafe c/ leite</option>
+                    <option value="dr_peanut">Dr.Peanut (2 col)</option>
+                  </optgroup>
+                </select>
+                <input class="form-input" type="number" id="calcGrams" placeholder="gramas" style="flex:1;padding:10px;font-size:13px;">
+              </div>
+              <div id="calcResult" style="display:none;background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px;"></div>
+              <button class="btn-secondary" onclick="calcAndAdd()" style="width:100%;padding:10px;font-size:13px;">&#10133; Calcular e Adicionar</button>
+            </div>
           </div>
 
           <!-- Quick Macros -->
@@ -471,18 +567,20 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
             <div class="form-label">&#9889; Atalhos Rapidos</div>
             <div id="mealPresets"></div>
             <div style="margin-top:8px;">
-              <div class="form-label" style="font-size:10px;color:var(--text3);margin-top:8px;">Ingredientes avulsos</div>
+              <div class="form-label" style="font-size:10px;color:var(--text3);margin-top:8px;">Ingredientes avulsos (1 porcao)</div>
               <div class="feeling-options" style="flex-wrap:wrap;margin-top:6px;">
                 <div class="feeling-btn" onclick="quickMeal('ISO100 1 scoop',25,2,120)" style="min-width:70px;">ISO100<br><small>25g prot</small></div>
                 <div class="feeling-btn" onclick="quickMeal('2 ovos',14,1,156)" style="min-width:55px;">2 Ovos<br><small>14g</small></div>
                 <div class="feeling-btn" onclick="quickMeal('banana',1,27,105)" style="min-width:55px;">Banana<br><small>27g carb</small></div>
                 <div class="feeling-btn" onclick="quickMeal('Dr.Peanut 2col',8,6,190)" style="min-width:70px;">Dr.Peanut<br><small>8g prot</small></div>
                 <div class="feeling-btn" onclick="quickMeal('cuscuz',3,30,140)" style="min-width:55px;">Cuscuz<br><small>30g carb</small></div>
-                <div class="feeling-btn" onclick="quickMeal('frango',30,0,165)" style="min-width:55px;">Frango<br><small>30g prot</small></div>
+                <div class="feeling-btn" onclick="quickMeal('frango grelhado',30,0,165)" style="min-width:55px;">Frango<br><small>30g prot</small></div>
                 <div class="feeling-btn" onclick="quickMeal('2 bifes carne',40,0,300)" style="min-width:70px;">2 Bifes<br><small>40g prot</small></div>
                 <div class="feeling-btn" onclick="quickMeal('arroz',4,40,200)" style="min-width:55px;">Arroz<br><small>40g carb</small></div>
                 <div class="feeling-btn" onclick="quickMeal('tapioca',1,25,110)" style="min-width:55px;">Tapioca<br><small>25g carb</small></div>
                 <div class="feeling-btn" onclick="quickMeal('cafe c/ leite',4,6,60)" style="min-width:70px;">Cafe+Leite<br><small>4g prot</small></div>
+                <div class="feeling-btn" onclick="quickMeal('hamburguer',28,35,550)" style="min-width:75px;">Hamburguer<br><small>28g prot</small></div>
+                <div class="feeling-btn" onclick="quickMeal('sashimi 10pc',20,2,120)" style="min-width:70px;">Sashimi<br><small>20g prot</small></div>
               </div>
             </div>
           </div>
@@ -520,7 +618,11 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         </div>
       </div>
     </div>
-    <div class="section"><div class="section-title"><span>&#128218;</span> HISTORICO</div><div id="historyList"></div></div>
+    <div class="section">
+      <div class="section-title"><span>&#128197;</span> CALENDARIO</div>
+      <div class="cal-strip" id="progressCalStrip"></div>
+    </div>
+    <div class="section" style="padding-top:0;"><div class="section-title"><span>&#128218;</span> HISTORICO</div><div id="historyList"></div></div>
   </div>
 
   <!-- ==================== TAB: SETTINGS ==================== -->
@@ -644,6 +746,8 @@ const MEAL_PLAN = [
     presets: [
       { label:'Jantar casa (carne)', desc:'Carne/frango + arroz + salada + legumes', protein:38, carb:45, cal:465 },
       { label:'Jantar casa (frango)', desc:'Frango grelhado + arroz + salada + verdura', protein:34, carb:45, cal:415 },
+      { label:'Hamburguer tradicional', desc:'Hamburguer (pao + carne 180g + queijo + salada)', protein:42, carb:38, cal:680 },
+      { label:'Sanduiche de frango', desc:'Sanduiche c/ file de frango 70g + queijo + salada', protein:25, carb:30, cal:420 },
       { label:'Omelete + tapioca', desc:'Omelete 3 ovos + tapioca + salada', protein:22, carb:30, cal:310 },
       { label:'Rodizio Japones', desc:'Sashimi + sushi + temaki + pratos quentes', protein:55, carb:65, cal:850 },
       { label:'Jantar pos-live', desc:'Carne/frango + arroz + salada (jantar tardio ~21:30)', protein:35, carb:45, cal:450 }
@@ -762,10 +866,63 @@ function getSaturday(d) { const s=getSunday(d); s.setDate(s.getDate()+6); return
 function calcPace(km,min) { if(!km||!min) return '--:--'; const p=min/km; return Math.floor(p)+':'+String(Math.round((p-Math.floor(p))*60)).padStart(2,'0'); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
-function getTodayMeals() { const t=todayStr(); return DATA.meals.filter(m=>m.date===t); }
-function getTodayMacros() {
-  const meals = getTodayMeals();
+// Selected date for nutrition view (default: today)
+let nutriSelectedDate = todayStr();
+
+function getMealsForDate(dateStr) { return DATA.meals.filter(m=>m.date===dateStr); }
+function getMacrosForDate(dateStr) {
+  const meals = getMealsForDate(dateStr);
   return { protein: meals.reduce((s,m)=>s+m.protein,0), carb: meals.reduce((s,m)=>s+m.carb,0), cal: meals.reduce((s,m)=>s+m.cal,0), count: meals.length };
+}
+function getLogsForDate(dateStr) { return DATA.logs.filter(l=>l.date===dateStr); }
+
+function getTodayMeals() { return getMealsForDate(todayStr()); }
+function getTodayMacros() { return getMacrosForDate(todayStr()); }
+
+// Date navigation
+function nutriChangeDay(delta) {
+  const d = new Date(nutriSelectedDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  nutriSelectedDate = d.toISOString().slice(0,10);
+  // Don't go past today
+  if (nutriSelectedDate > todayStr()) { nutriSelectedDate = todayStr(); }
+  renderNutrition();
+}
+function nutriGoToday() {
+  nutriSelectedDate = todayStr();
+  renderNutrition();
+}
+function nutriSelectDay(dateStr) {
+  if (dateStr > todayStr()) return;
+  nutriSelectedDate = dateStr;
+  renderNutrition();
+}
+
+// Calendar strip helper
+function renderCalStrip(containerId, selectedDate, onClickFn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const today = todayStr();
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+  const mealDates = new Set(DATA.meals.map(m=>m.date));
+  const logDates = new Set(DATA.logs.map(l=>l.date));
+  let html = '';
+  // Show 14 days back + today
+  for (let i = -13; i <= 0; i++) {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    const ds = d.toISOString().slice(0,10);
+    const isToday = ds === today;
+    const isSelected = ds === selectedDate;
+    const hasMeal = mealDates.has(ds);
+    const hasLog = logDates.has(ds);
+    html += `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''} ${hasLog?'has-data':''} ${hasMeal?'has-meal':''}" onclick="${onClickFn}('${ds}')">
+      <div class="cal-day-name">${dayNames[d.getDay()]}</div>
+      <div class="cal-day-num">${d.getDate()}</div>
+    </div>`;
+  }
+  container.innerHTML = html;
+  // Scroll to end (today)
+  container.scrollLeft = container.scrollWidth;
 }
 
 // ===== UI =====
@@ -774,9 +931,9 @@ function switchTab(name,el) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(el) el.classList.add('active');
-  if(name==='progress') { renderChart(); renderProteinChart(); }
+  if(name==='progress') { renderChart(); renderProteinChart(); updateUI(); }
   if(name==='log') document.getElementById('logDate').value = todayStr();
-  if(name==='nutri') renderNutrition();
+  if(name==='nutri') { nutriSelectedDate = nutriSelectedDate || todayStr(); renderNutrition(); }
 }
 
 function switchLogSub(sub) {
@@ -813,6 +970,109 @@ function handlePhoto(e) {
     document.getElementById('photoBtn').innerHTML = '&#9989; Foto capturada - Trocar';
   };
   reader.readAsDataURL(file);
+}
+
+// ===== SMART FOOD DATABASE (per 100g unless noted) =====
+const FOOD_CALC = {
+  // Proteinas - valores por 100g
+  frango:     { name:'Frango (peito)', per100:true, protein:31, carb:0, cal:165, fat:3.6 },
+  carne_boi:  { name:'Carne bovina', per100:true, protein:26, carb:0, cal:250, fat:17 },
+  carne_sol:  { name:'Carne de sol', per100:true, protein:35, carb:0, cal:250, fat:12 },
+  hamburguer: { name:'Hamburguer (carne)', per100:true, protein:17, carb:0, cal:250, fat:20 },
+  peixe:      { name:'Peixe/Salmao', per100:true, protein:20, carb:0, cal:208, fat:13 },
+  ovo:        { name:'Ovo', per100:false, unit:1, protein:7, carb:0.5, cal:78, fat:5 },
+  omelete3:   { name:'Omelete 3 ovos', per100:false, unit:1, protein:21, carb:2, cal:234, fat:18 },
+  whey:       { name:'ISO100 (scoop)', per100:false, unit:1, protein:25, carb:2, cal:120, fat:0.5 },
+  queijo:     { name:'Queijo mussarela', per100:true, protein:22, carb:1, cal:300, fat:22 },
+  iogurte:    { name:'Iogurte grego', per100:true, protein:10, carb:4, cal:97, fat:5 },
+  // Carboidratos
+  arroz:      { name:'Arroz branco', per100:true, protein:2.5, carb:28, cal:130, fat:0.3 },
+  cuscuz:     { name:'Cuscuz', per100:true, protein:3.6, carb:25, cal:112, fat:0.2 },
+  tapioca:    { name:'Tapioca', per100:false, unit:1, protein:1, carb:25, cal:110, fat:0 },
+  pao:        { name:'Pao', per100:false, unit:1, protein:4, carb:28, cal:140, fat:1.5 },
+  batata_doce:{ name:'Batata doce', per100:true, protein:1.6, carb:20, cal:86, fat:0.1 },
+  mandioca:   { name:'Mandioca', per100:true, protein:1.4, carb:36, cal:159, fat:0.3 },
+  banana:     { name:'Banana', per100:false, unit:1, protein:1, carb:27, cal:105, fat:0.4 },
+  // Pratos prontos (unidade)
+  hamburguer_completo: { name:'Hamburguer completo', per100:false, unit:1, protein:28, carb:35, cal:550, fat:30 },
+  sanduiche_frango: { name:'Sanduiche de frango', per100:false, unit:1, protein:25, carb:30, cal:420, fat:18 },
+  sushi_combo:  { name:'Combo sushi 10pc', per100:false, unit:1, protein:15, carb:45, cal:350, fat:8 },
+  sashimi_combo:{ name:'Combo sashimi 10 fatias', per100:false, unit:1, protein:20, carb:2, cal:120, fat:4 },
+  temaki:       { name:'Temaki', per100:false, unit:1, protein:12, carb:20, cal:200, fat:8 },
+  rodizio_japones:{ name:'Rodizio japones', per100:false, unit:1, protein:55, carb:65, cal:850, fat:25 },
+  // Outros
+  feijao:     { name:'Feijao', per100:true, protein:5, carb:14, cal:77, fat:0.5 },
+  salada:     { name:'Salada verde', per100:true, protein:1.5, carb:3, cal:20, fat:0.2 },
+  cafe_leite: { name:'Cafe c/ leite', per100:false, unit:1, protein:4, carb:6, cal:60, fat:2 },
+  dr_peanut:  { name:'Dr.Peanut 2 col', per100:false, unit:1, protein:8, carb:6, cal:190, fat:14 }
+};
+
+// Preview calc on food/grams change
+document.getElementById('calcFood')?.addEventListener('change', previewCalc);
+document.getElementById('calcGrams')?.addEventListener('input', previewCalc);
+
+function previewCalc() {
+  const foodKey = document.getElementById('calcFood').value;
+  const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
+  const resultDiv = document.getElementById('calcResult');
+  if (!foodKey) { resultDiv.style.display = 'none'; return; }
+  const food = FOOD_CALC[foodKey];
+  if (!food) { resultDiv.style.display = 'none'; return; }
+
+  let prot, carb, cal, desc;
+  if (food.per100) {
+    if (!grams) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `<span style="color:var(--text2);">${food.name}: <strong style="color:var(--purple);">${food.protein}g prot</strong> / ${food.carb}g carb / ${food.cal} kcal por 100g<br>Digite a gramatura para calcular</span>`;
+      return;
+    }
+    const mult = grams / 100;
+    prot = Math.round(food.protein * mult);
+    carb = Math.round(food.carb * mult);
+    cal = Math.round(food.cal * mult);
+    desc = `${food.name} ${grams}g`;
+  } else {
+    const qty = grams || 1;
+    prot = Math.round(food.protein * qty);
+    carb = Math.round(food.carb * qty);
+    cal = Math.round(food.cal * qty);
+    desc = qty > 1 ? `${qty}x ${food.name}` : food.name;
+  }
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `<strong>${desc}</strong><br>
+    <span style="color:var(--purple);">${prot}g proteina</span> |
+    <span style="color:var(--blue);">${carb}g carbo</span> |
+    <span style="color:var(--accent);">${cal} kcal</span>
+    ${food.per100 ? '<br><small style="color:var(--text3);">De ' + food.protein + 'g prot/100g &times; ' + grams + 'g = ' + prot + 'g proteina real</small>' : ''}`;
+}
+
+function calcAndAdd() {
+  const foodKey = document.getElementById('calcFood').value;
+  const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
+  if (!foodKey) { showToast('Escolha um alimento'); return; }
+  const food = FOOD_CALC[foodKey];
+  if (!food) return;
+
+  let prot, carb, cal, desc;
+  if (food.per100) {
+    if (!grams) { showToast('Digite a gramatura'); return; }
+    const mult = grams / 100;
+    prot = Math.round(food.protein * mult);
+    carb = Math.round(food.carb * mult);
+    cal = Math.round(food.cal * mult);
+    desc = `${food.name} ${grams}g`;
+  } else {
+    const qty = grams || 1;
+    prot = Math.round(food.protein * qty);
+    carb = Math.round(food.carb * qty);
+    cal = Math.round(food.cal * qty);
+    desc = qty > 1 ? `${qty}x ${food.name}` : food.name;
+  }
+  quickMeal(desc, prot, carb, cal);
+  document.getElementById('calcFood').value = '';
+  document.getElementById('calcGrams').value = '';
+  document.getElementById('calcResult').style.display = 'none';
+  showToast(`+${prot}g proteina adicionado`);
 }
 
 // ===== QUICK MEAL =====
@@ -883,7 +1143,7 @@ function editMeal(id) {
   switchTab('log',document.querySelectorAll('.nav-item')[2]); switchLogSub('refeicao');
 }
 function cancelMealEdit() { editingMealId=null; document.getElementById('mealCancelBtn').style.display='none'; resetMealForm(); }
-function resetMealForm() { ['mealDesc','mealProtein','mealCarb','mealCal'].forEach(id=>{document.getElementById(id).value='';}); document.getElementById('mealTime').value=''; capturedPhoto=null; document.getElementById('photoPreview').style.display='none'; document.getElementById('photoBtn').innerHTML='&#128247; Tirar Foto / Escolher Imagem'; }
+function resetMealForm() { ['mealDesc','mealProtein','mealCarb','mealCal','calcGrams'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); document.getElementById('mealTime').value=''; document.getElementById('calcFood').value=''; const cr=document.getElementById('calcResult');if(cr)cr.style.display='none'; capturedPhoto=null; document.getElementById('photoPreview').style.display='none'; document.getElementById('photoBtn').innerHTML='&#128247; Tirar Foto / Escolher Imagem'; }
 
 function logMealFromSlot(mealId) {
   document.getElementById('mealType').value=mealId;
@@ -905,10 +1165,23 @@ document.getElementById('logType')?.addEventListener('change',function(){documen
 
 // ===== RENDER NUTRITION TAB =====
 function renderNutrition() {
-  const macros = getTodayMacros();
+  const isToday = nutriSelectedDate === todayStr();
+  const macros = getMacrosForDate(nutriSelectedDate);
   const protPct = Math.min(100, Math.round(macros.protein/PROTEIN_GOAL*100));
   const carbPct = Math.min(100, Math.round(macros.carb/CARB_GOAL*100));
   const calPct = Math.min(100, Math.round(macros.cal/CAL_GOAL*100));
+
+  // Update date navigator
+  const selDate = new Date(nutriSelectedDate + 'T12:00:00');
+  const dayNames = ['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('nutriDateLabel').textContent = isToday ? 'Hoje' : dayNames[selDate.getDay()];
+  document.getElementById('nutriDateSub').textContent = `${selDate.getDate()} ${months[selDate.getMonth()]} ${selDate.getFullYear()}`;
+  document.getElementById('nutriNextBtn').disabled = isToday;
+  document.getElementById('nutriSectionTitle').textContent = isToday ? 'NUTRICAO HOJE' : `NUTRICAO - ${selDate.getDate()}/${selDate.getMonth()+1}`;
+
+  // Calendar strip
+  renderCalStrip('nutriCalStrip', nutriSelectedDate, 'nutriSelectDay');
 
   // SVG ring helper
   function ring(pct, color, size, val, unit) {
@@ -938,7 +1211,7 @@ function renderNutrition() {
     </div>`;
 
   // Meal slots
-  const todayMeals = getTodayMeals();
+  const todayMeals = getMealsForDate(nutriSelectedDate);
   const slotsHtml = MEAL_PLAN.map(slot => {
     const logged = todayMeals.filter(m=>m.type===slot.id);
     const isLogged = logged.length > 0;
@@ -960,12 +1233,19 @@ function renderNutrition() {
   const protLeft = PROTEIN_GOAL - macros.protein;
   const hour = new Date().getHours();
   let alertHtml = '';
-  if(protLeft > 80 && hour > 14) {
-    alertHtml = `<div class="protein-alert"><div class="alert-icon">&#128680;</div><div class="alert-text"><strong>ALERTA:</strong> Faltam ${protLeft}g de proteina hoje e ja passou da metade do dia. Risco de perder massa muscular! Adicione whey + refeicao rica em proteina.</div></div>`;
-  } else if(protLeft > 40 && hour > 18) {
-    alertHtml = `<div class="protein-alert"><div class="alert-icon">&#9888;&#65039;</div><div class="alert-text"><strong>Atencao:</strong> Faltam ${protLeft}g de proteina. Considere adicionar um whey (30g) + jantar reforçado em proteina.</div></div>`;
-  } else if(protLeft <= 0) {
-    alertHtml = `<div class="protein-alert ok"><div class="alert-icon">&#9989;</div><div class="alert-text"><strong>Meta batida!</strong> Voce atingiu ${macros.protein}g de proteina hoje. Excelente para preservar massa muscular!</div></div>`;
+  if (!isToday && macros.count > 0) {
+    // Past day summary
+    alertHtml = protLeft <= 0
+      ? `<div class="protein-alert ok"><div class="alert-icon">&#9989;</div><div class="alert-text"><strong>Meta batida!</strong> ${macros.protein}g de proteina neste dia.</div></div>`
+      : `<div class="protein-alert"><div class="alert-icon">&#9888;&#65039;</div><div class="alert-text"><strong>Abaixo da meta:</strong> ${macros.protein}g de ${PROTEIN_GOAL}g (faltaram ${protLeft}g).</div></div>`;
+  } else if (isToday) {
+    if(protLeft > 80 && hour > 14) {
+      alertHtml = `<div class="protein-alert"><div class="alert-icon">&#128680;</div><div class="alert-text"><strong>ALERTA:</strong> Faltam ${protLeft}g de proteina hoje e ja passou da metade do dia. Risco de perder massa muscular!</div></div>`;
+    } else if(protLeft > 40 && hour > 18) {
+      alertHtml = `<div class="protein-alert"><div class="alert-icon">&#9888;&#65039;</div><div class="alert-text"><strong>Atencao:</strong> Faltam ${protLeft}g de proteina. Whey (25g) + jantar reforçado!</div></div>`;
+    } else if(protLeft <= 0) {
+      alertHtml = `<div class="protein-alert ok"><div class="alert-icon">&#9989;</div><div class="alert-text"><strong>Meta batida!</strong> ${macros.protein}g de proteina hoje. Excelente!</div></div>`;
+    }
   }
   document.getElementById('nutriAlertSection').innerHTML = alertHtml;
 
@@ -1089,24 +1369,71 @@ function updateUI() {
   document.getElementById('daysOnTarget').textContent = dailyProts.filter(p=>p>=PROTEIN_GOAL).length;
   document.getElementById('totalMeals').textContent = DATA.meals.length;
 
-  // History
+  // Calendar strip in Evolucao
+  renderCalStrip('progressCalStrip', todayStr(), 'nutriSelectDay');
+
+  // History - grouped by day
   const hl=document.getElementById('historyList'); hl.innerHTML='';
   const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const combined = [
-    ...DATA.logs.map(l=>({...l, _kind:'treino'})),
-    ...DATA.meals.map(m=>({...m, _kind:'meal'}))
-  ].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const dayNames=['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
 
-  combined.forEach(item=>{
-    const d=new Date(item.date+'T12:00:00');
-    if(item._kind==='treino') {
-      const tl=item.type==='corrida'?'Corrida':item.type==='academia'?'Academia':item.type==='tenis'?'Tenis':'Descanso';
-      hl.innerHTML+=`<div class="history-item"><div class="history-date"><div class="history-day">${d.getDate()}</div><div class="history-month">${months[d.getMonth()]}</div></div><div class="history-info"><div class="history-workout">&#127939; ${tl} ${item.distance>0?'- '+item.distance+'km':''}</div><div class="history-details">${item.feeling||''} ${item.recovery&&item.recovery.length?'| '+item.recovery.join(', '):''}</div></div>${item.pace&&item.pace!=='--'?`<div class="history-pace">${item.pace}</div>`:''}<button class="history-edit" onclick="editLog(${item.id})">&#9998;</button></div>`;
-    } else {
-      const ml=MEAL_PLAN.find(s=>s.id===item.type);
-      hl.innerHTML+=`<div class="history-item"><div class="history-date"><div class="history-day">${d.getDate()}</div><div class="history-month">${months[d.getMonth()]}</div></div><div class="history-info"><div class="history-workout" style="color:var(--purple);">${ml?ml.icon:'&#127860;'} ${ml?ml.name:item.type}</div><div class="history-details">${item.desc} | ${item.protein}g prot</div></div><div class="history-pace" style="color:var(--purple);font-size:14px;">${item.protein}g</div><button class="history-edit" onclick="editMeal(${item.id})">&#9998;</button></div>`;
+  // Get all unique dates from both logs and meals
+  const allDateSet = new Set([...DATA.logs.map(l=>l.date), ...DATA.meals.map(m=>m.date)]);
+  const allDatesArr = [...allDateSet].sort((a,b)=>b.localeCompare(a));
+
+  allDatesArr.forEach(dateStr => {
+    const d = new Date(dateStr + 'T12:00:00');
+    const dayLogs = DATA.logs.filter(l=>l.date===dateStr);
+    const dayMeals = DATA.meals.filter(m=>m.date===dateStr);
+    const dayProt = dayMeals.reduce((s,m)=>s+m.protein,0);
+    const dayCal = dayMeals.reduce((s,m)=>s+m.cal,0);
+    const hasRun = dayLogs.some(l=>l.type==='corrida');
+    const hasGym = dayLogs.some(l=>l.type==='academia'||l.type==='tenis');
+
+    let html = `<div class="history-day-card">`;
+    html += `<div class="history-day-header">`;
+    html += `<div><div class="history-day-date">${dayNames[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}</div></div>`;
+    html += `<div class="history-day-badges">`;
+    if (hasRun) html += `<span class="history-day-badge" style="background:rgba(249,115,22,0.15);color:var(--accent);">&#127939; Corrida</span>`;
+    if (hasGym) html += `<span class="history-day-badge" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#128170; Treino</span>`;
+    if (dayMeals.length) html += `<span class="history-day-badge" style="background:rgba(168,85,247,0.15);color:var(--purple);">${dayProt}g prot</span>`;
+    html += `</div></div>`;
+
+    // Training entries
+    dayLogs.forEach(item => {
+      const tl = item.type==='corrida'?'Corrida':item.type==='academia'?'Academia':item.type==='tenis'?'Tenis':'Outro';
+      html += `<div class="history-meal-row">
+        <span>&#127939; ${tl} ${item.distance>0?' '+item.distance+'km':''}${item.pace&&item.pace!=='--'?' @ '+item.pace:''}${item.feeling?' - '+item.feeling:''}</span>
+        <button class="history-edit" onclick="editLog(${item.id})" style="position:static;font-size:14px;">&#9998;</button>
+      </div>`;
+    });
+
+    // Meal entries
+    dayMeals.forEach(item => {
+      const ml = MEAL_PLAN.find(s=>s.id===item.type);
+      html += `<div class="history-meal-row">
+        <span>${ml?ml.icon:'&#127860;'} <strong style="color:var(--text2);">${ml?ml.name:item.type}</strong> ${item.desc}${item.time?' ('+item.time+')':''}</span>
+        <span style="color:var(--purple);font-weight:700;white-space:nowrap;">${item.protein}g</span>
+      </div>`;
+    });
+
+    // Day totals if has meals
+    if (dayMeals.length) {
+      const protPct = Math.round(dayProt/PROTEIN_GOAL*100);
+      html += `<div style="display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg3);font-size:12px;">
+        <span style="color:var(--purple);">${dayProt}g / ${PROTEIN_GOAL}g prot (${protPct}%)</span>
+        <span style="color:var(--accent);">${dayCal} kcal</span>
+        <span style="color:var(--text3);">${dayMeals.length} refeicoes</span>
+      </div>`;
     }
+
+    html += `</div>`;
+    hl.innerHTML += html;
   });
+
+  if (!allDatesArr.length) {
+    hl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">Nenhum registro ainda. Comece registrando treinos e refeicoes!</div>';
+  }
 }
 
 function showDayDetail(i) {
