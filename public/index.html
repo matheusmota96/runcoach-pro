@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>RunCoach Pro - Mota</title>
 <style>
 :root {
@@ -294,6 +297,9 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
   pointer-events:none; opacity:0;
 }
 .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+#refreshBtn.spinning { animation: spin 0.6s ease; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+#refreshBtn:active { background: rgba(148,163,184,0.2); }
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
 .fade-in { animation:fadeIn 0.4s ease-out; }
 
@@ -327,6 +333,43 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 .history-day-meals { display:flex; flex-direction:column; gap:6px; }
 .history-meal-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-bottom:1px solid var(--bg3); }
 .history-meal-row:last-child { border-bottom:none; }
+
+/* Coach Tips */
+.coach-tip {
+  background:linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(6,182,212,0.06) 100%);
+  border:1px solid rgba(34,197,94,0.2); border-radius:var(--radius); padding:16px; margin-bottom:10px;
+  position:relative; overflow:hidden;
+}
+.coach-tip::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; border-radius:3px 0 0 3px;
+}
+.coach-tip.tip-green::before { background:var(--green); }
+.coach-tip.tip-blue::before { background:var(--blue); }
+.coach-tip.tip-yellow::before { background:var(--yellow); }
+.coach-tip.tip-cyan::before { background:var(--cyan); }
+.coach-tip-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.coach-tip-tag { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:3px 8px; border-radius:6px; }
+.coach-tip-tag.green { background:rgba(34,197,94,0.15); color:var(--green); }
+.coach-tip-tag.blue { background:rgba(59,130,246,0.15); color:var(--blue); }
+.coach-tip-tag.yellow { background:rgba(234,179,8,0.15); color:var(--yellow); }
+.coach-tip-tag.cyan { background:rgba(6,182,212,0.15); color:var(--cyan); }
+.coach-tip-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+.coach-tip-text { font-size:13px; color:var(--text2); line-height:1.5; }
+.coach-tip-more { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--cyan); font-weight:600; cursor:pointer; margin-top:8px; background:none; border:none; padding:0; }
+.coach-tip-more:active { opacity:0.7; }
+
+/* Electrolyte indicator */
+.electro-row {
+  display:flex; align-items:center; gap:10px; background:var(--bg2);
+  border-radius:12px; padding:12px 14px; margin-bottom:10px;
+  border:1px solid rgba(6,182,212,0.15);
+}
+.electro-icon { font-size:18px; flex-shrink:0; }
+.electro-info { flex:1; }
+.electro-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+.electro-value { font-size:15px; font-weight:700; color:var(--cyan); }
+.electro-detail { font-size:11px; color:var(--text2); margin-top:2px; }
 </style>
 </head>
 <body>
@@ -339,7 +382,10 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         <div class="header-name">Mota</div>
         <div class="header-date" id="headerDate"></div>
       </div>
-      <div class="header-badge" id="weekBadge">Semana 1</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="refreshBtn" onclick="fullRefresh()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:6px;border-radius:50%;transition:all 0.3s;" title="Atualizar dados">&#x21bb;</button>
+        <div class="header-badge" id="weekBadge">Semana 1</div>
+      </div>
     </div>
   </div>
 
@@ -376,6 +422,13 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         <div class="today-details" id="todayDetails"></div>
       </div>
     </div>
+    <!-- Coach Tips Section -->
+    <div class="section" id="coachTipsSection">
+      <div class="section-title"><span>&#128161;</span> DICA DO COACH</div>
+      <div id="coachTipsContainer"></div>
+      <div id="electrolyteRow"></div>
+    </div>
+
     <div class="section" id="analysisSection">
       <div class="section-title"><span>&#128202;</span> ANALISE DO ULTIMO TREINO</div>
       <div class="analysis-card">
@@ -700,6 +753,284 @@ const GLOSSARY = {
   'shakeout': { title:'&#129406; Shakeout', text:'Corrida curta (3-4km) 1-2 dias antes da prova. Solta as pernas sem cansar.' }
 };
 
+// ===== CONTEXTUAL COACH TIPS ENGINE =====
+function getDayContext() {
+  const today = new Date();
+  const dayIdx = today.getDay(); // 0=Dom
+  const plan = generateWeekPlan(today.toISOString().slice(0,10));
+  const todayPlan = plan[dayIdx];
+  const tomorrowIdx = (dayIdx + 1) % 7;
+  const tomorrowPlan = plan[tomorrowIdx];
+  const yesterdayIdx = (dayIdx + 6) % 7;
+  const yesterdayPlan = plan[yesterdayIdx];
+
+  const isLongao = todayPlan && todayPlan.type === 'long';
+  const isTomorrowLongao = tomorrowPlan && tomorrowPlan.type === 'long';
+  const wasYesterdayLongao = yesterdayPlan && yesterdayPlan.type === 'long';
+  const isTrainingDay = todayPlan && (todayPlan.km > 0 || todayPlan.type === 'gym' || todayPlan.type === 'tennis');
+  const isHardTraining = todayPlan && (todayPlan.intensity === 'hard' || todayPlan.intensity === 'moderate');
+  const isRestDay = !isTrainingDay;
+  const dl = Math.ceil((RACE_DATE - today) / 864e5);
+
+  return { dayIdx, todayPlan, tomorrowPlan, yesterdayPlan, isLongao, isTomorrowLongao, wasYesterdayLongao, isTrainingDay, isHardTraining, isRestDay, dl };
+}
+
+function getCoachTips() {
+  const ctx = getDayContext();
+  const tips = [];
+
+  // PRIORITY 1: Tomorrow is longão — prep tips
+  if (ctx.isTomorrowLongao) {
+    tips.push({
+      color: 'yellow', tag: 'Preparacao', tagColor: 'yellow',
+      title: 'Amanha e dia de longao!',
+      text: 'Hoje o foco e carboidrato, hidratacao, eletrolitos e sono.',
+      detailKey: 'pre_longao'
+    });
+  }
+
+  // PRIORITY 1: Today IS longão
+  if (ctx.isLongao) {
+    tips.push({
+      color: 'green', tag: 'Longao', tagColor: 'green',
+      title: 'Hoje e dia de longao!',
+      text: 'Entre leve, hidratado e com energia. Protocolo completo de eletrolitos ativado.',
+      detailKey: 'dia_longao'
+    });
+  }
+
+  // Post-longão recovery
+  if (ctx.wasYesterdayLongao) {
+    tips.push({
+      color: 'cyan', tag: 'Recuperacao', tagColor: 'cyan',
+      title: 'Recuperacao ativa hoje',
+      text: 'Ontem foi longao. Mantenha proteina alta, hidrate bastante e descanse.',
+      detailKey: 'pos_longao'
+    });
+  }
+
+  // Normal training day (not longão)
+  if (ctx.isTrainingDay && !ctx.isLongao) {
+    tips.push({
+      color: 'blue', tag: 'Treino', tagColor: 'blue',
+      title: 'Dia de treino: cuide da hidratacao',
+      text: ctx.isHardTraining
+        ? 'Treino intenso hoje. Eletrolitos antes e depois. Hidrate com 3L+ de agua.'
+        : 'Treino leve hoje. 1 sache de eletrolitos ao longo do dia e boa hidratacao.',
+      detailKey: 'dia_treino'
+    });
+  }
+
+  // Rest day tip
+  if (ctx.isRestDay && !ctx.wasYesterdayLongao && !ctx.isTomorrowLongao) {
+    tips.push({
+      color: 'cyan', tag: 'Descanso', tagColor: 'cyan',
+      title: 'Dia de descanso ativo',
+      text: 'Aproveite para hidratar bem, manter proteina alta e alongar.',
+      detailKey: 'dia_descanso'
+    });
+  }
+
+  // Race week special tip
+  if (ctx.dl <= 7 && ctx.dl > 0) {
+    tips.push({
+      color: 'green', tag: 'Semana da Prova', tagColor: 'green',
+      title: 'Taper final — foco total!',
+      text: 'Volume baixo, hidratacao alta, carboidrato alto nos ultimos 3 dias. Nada novo no dia da prova.',
+      detailKey: 'semana_prova'
+    });
+  }
+
+  return tips;
+}
+
+function getElectrolyteProtocol() {
+  const ctx = getDayContext();
+
+  if (ctx.isLongao) {
+    return { saches: '3-4', dist: '1 antes + 1 durante + 1 apos', detail: 'Longao exige reposicao completa. Nao dependa de 1 dose so.', icon: '⚡' };
+  }
+  if (ctx.isTomorrowLongao) {
+    return { saches: '1-2', dist: 'Ao longo do dia com agua', detail: 'Reforce eletrolitos hoje para chegar preparado amanha.', icon: '💧' };
+  }
+  if (ctx.wasYesterdayLongao) {
+    return { saches: '2', dist: '1 de manha + 1 a tarde', detail: 'Reposicao pos-longao. Complementar com sal na comida e agua de coco.', icon: '🔄' };
+  }
+  if (ctx.isTrainingDay && ctx.isHardTraining) {
+    return { saches: '2', dist: '1 antes + 1 apos treino', detail: 'Treino intenso pede reposicao antes e depois.', icon: '💪' };
+  }
+  if (ctx.isTrainingDay) {
+    return { saches: '1-2', dist: '1 antes do treino (+ 1 apos se necessario)', detail: 'Treino normal: 1 sache garante a base.', icon: '🏃' };
+  }
+  return { saches: '1', dist: 'Ao longo do dia', detail: 'Dia leve: 1 sache com agua para manter equilibrio.', icon: '💧' };
+}
+
+const COACH_DETAILS = {
+  pre_longao: {
+    title: '🏃 Preparacao para o Longao',
+    text: `<strong>Alimentacao</strong><br>
+• Aumente carboidrato: arroz, macarrao, batata, cuscuz<br>
+• Mantenha proteina (frango, carne, ovos)<br>
+• Reduza gordura e evite fritura<br>
+• Jantar leve ate 20h-21h<br><br>
+<strong>Hidratacao</strong><br>
+• Meta: 3,5L a 4L de agua hoje<br>
+• Inclua agua de coco ou agua com pitada de sal<br>
+• Use 1-2 saches Behyve ao longo do dia<br><br>
+<strong>Sono</strong><br>
+• Priorize 7h30-8h30 de sono<br>
+• Evite telas antes de dormir<br>
+• Evite alcool`
+  },
+  dia_longao: {
+    title: '⚡ Protocolo do Longao',
+    text: `<strong>Antes de correr (60-90 min)</strong><br>
+• Banana + aveia, pao ou cuscuz<br>
+• Whey opcional<br>
+• 300-500ml de agua<br>
+• 1 sache Behyve com agua<br><br>
+<strong>Durante o treino</strong><br>
+• Pequenos goles de agua, nao espere sede<br>
+• Acima de 12-14km: considere gel<br>
+• 1 gel a cada 40-50min se necessario, com agua<br>
+• Reforce com 1 sache Behyve se sentir necessidade<br><br>
+<strong>Apos o treino (ate 1h)</strong><br>
+• Proteina + carbo alto (35-45g prot)<br>
+• Ex: arroz, feijao, frango/carne, legumes<br>
+• Fruta + agua de coco<br>
+• 1 sache Behyve para reposicao<br><br>
+<strong>Resto do dia</strong><br>
+• Proteina ~140g total<br>
+• Agua: 3,5-4L<br>
+• Carbo mais alto que o normal`
+  },
+  pos_longao: {
+    title: '🔄 Recuperacao Pos-Longao',
+    text: `<strong>Alimentacao</strong><br>
+• Mantenha proteina alta ao longo do dia<br>
+• Carbo moderado/alto para repor reservas<br>
+• Inclua frutas e verduras<br><br>
+<strong>Hidratacao</strong><br>
+• Continue bebendo bastante agua<br>
+• Agua de coco ajuda na reposicao<br>
+• Use 2 saches Behyve (manha + tarde)<br><br>
+<strong>Recuperacao</strong><br>
+• Alongamento leve<br>
+• Banheira de gelo se possivel<br>
+• Descanso ativo, sem treino pesado`
+  },
+  dia_treino: {
+    title: '🏋️ Dicas para o Treino',
+    text: `<strong>Antes do treino</strong><br>
+• 1 sache Behyve com 300-500ml de agua<br>
+• Refeicao leve 60-90min antes<br>
+• Banana + aveia ou cafe pre-treino habitual<br><br>
+<strong>Apos o treino</strong><br>
+• Proteina + carbo dentro de 1h<br>
+• 1 sache Behyve apos se treino foi intenso<br>
+• Hidrate bem ao longo do dia<br><br>
+<strong>Erros a evitar</strong><br>
+• Nao treine em jejum pesado<br>
+• Nao consuma so proteina no pos<br>
+• Nao beba so agua sem eletrolitos em treinos longos<br>
+• Dor de cabeca pode indicar baixa ingestao de sodio`
+  },
+  dia_descanso: {
+    title: '😌 Dia de Descanso Ativo',
+    text: `<strong>Alimentacao</strong><br>
+• Mantenha proteina (~140g) para preservar massa muscular<br>
+• Carbo moderado<br>
+• Hidratacao normal: 2,5-3L<br><br>
+<strong>Eletrolitos</strong><br>
+• 1 sache Behyve ao longo do dia<br>
+• Complementar com sal na comida<br><br>
+<strong>Recuperacao</strong><br>
+• Alongamento e mobilidade<br>
+• Caminhada leve se quiser<br>
+• Foco em descansar para o proximo treino`
+  },
+  semana_prova: {
+    title: '🏆 Semana da Prova',
+    text: `<strong>Taper</strong><br>
+• Volume reduzido: corridas curtas e leves<br>
+• Nada novo: nao teste comida/tenis/roupa nova<br><br>
+<strong>Ultimos 3 dias</strong><br>
+• Carbo alto: arroz, macarrao, batata, pao<br>
+• Proteina normal, gordura baixa<br>
+• Hidratacao: 3,5-4L/dia<br>
+• 2 saches Behyve/dia<br><br>
+<strong>Vespera da prova</strong><br>
+• Jantar leve ate 20h<br>
+• Dormir cedo<br>
+• Separar roupa e tenis<br>
+• 2 saches Behyve ao longo do dia<br><br>
+<strong>Dia da prova</strong><br>
+• Cafe leve 2h antes<br>
+• 1 sache Behyve + 500ml agua antes<br>
+• Gel preparado para km 10-12<br>
+• Confie no treino!`
+  },
+  eletrolitos: {
+    title: '💧 Protocolo Behyve',
+    text: `<strong>Sobre o Behyve</strong><br>
+• 336mg de sodio por dose (baixo a moderado)<br>
+• Sempre consumir com 300-500ml de agua<br><br>
+<strong>Regra Simples</strong><br>
+• Treino leve → 1 sache<br>
+• Treino normal → 2 saches (antes + depois)<br>
+• Longao → 3-4 saches distribuidos<br><br>
+<strong>Por que importa?</strong><br>
+• Dor de cabeca durante corrida = sodio baixo + desidratacao<br>
+• Em treinos intensos, 1 dose nao resolve<br>
+• Complementar com sal na comida<br>
+• Banana e agua de coco ajudam como apoio<br><br>
+<strong>Dica</strong><br>
+Quanto maior o treino, maior a necessidade. Nao espere sentir sede ou dor.`
+  }
+};
+
+function renderCoachTips() {
+  const tips = getCoachTips();
+  const electro = getElectrolyteProtocol();
+  const container = document.getElementById('coachTipsContainer');
+  const electroRow = document.getElementById('electrolyteRow');
+
+  if (!container || !electroRow) return;
+
+  // Render tips
+  container.innerHTML = tips.map(tip => `
+    <div class="coach-tip tip-${tip.color} fade-in">
+      <div class="coach-tip-header">
+        <span class="coach-tip-tag ${tip.tagColor}">${tip.tag}</span>
+      </div>
+      <div class="coach-tip-title">${tip.title}</div>
+      <div class="coach-tip-text">${tip.text}</div>
+      <button class="coach-tip-more" onclick="showCoachDetail('${tip.detailKey}')">Ver detalhes &#8250;</button>
+    </div>
+  `).join('');
+
+  // Render electrolyte protocol
+  electroRow.innerHTML = `
+    <div class="electro-row fade-in" onclick="showCoachDetail('eletrolitos')" style="cursor:pointer;">
+      <div class="electro-icon">${electro.icon}</div>
+      <div class="electro-info">
+        <div class="electro-label">Behyve Hoje</div>
+        <div class="electro-value">${electro.saches} sache${electro.saches==='1'?'':'s'}</div>
+        <div class="electro-detail">${electro.dist}</div>
+      </div>
+      <button class="info-btn" onclick="event.stopPropagation();showCoachDetail('eletrolitos')" style="flex-shrink:0;">?</button>
+    </div>
+  `;
+}
+
+function showCoachDetail(key) {
+  const detail = COACH_DETAILS[key];
+  if (!detail) return;
+  document.getElementById('tooltipTitle').innerHTML = detail.title;
+  document.getElementById('tooltipText').innerHTML = detail.text;
+  document.getElementById('tooltipOverlay').classList.add('show');
+}
+
 // ===== MEAL PLAN (dados reais do Mota) =====
 const MEAL_PLAN = [
   { id:'cafe', icon:'&#9749;', name:'Cafe / Pre-Treino', time:'7:00-7:30', defaultTime:'07:00',
@@ -783,13 +1114,37 @@ document.getElementById('mealType')?.addEventListener('change', ()=>{ renderPres
 // ===== DATA =====
 const DEFAULT_DATA = {
   athlete: { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045' },
-  logs: [{
-    id:1, date:'2026-03-26', type:'corrida', distance:6.23, time:37.38,
-    pace:'6:00', paceNum:6.0, feeling:'moderado', recovery:['gelo'],
-    notes:'Primeiro treino focado para meia maratona. Banheira de gelo apos treino.'
-  }],
-  meals: [],
-  nextId: 2, nextMealId: 1
+  logs: [
+    {id:1, date:'2026-03-26', type:'corrida', distance:6.23, time:37.38, pace:'6:00', paceNum:6, feeling:'moderado', recovery:['gelo'], notes:'Primeiro treino focado para meia maratona. Banheira de gelo apos treino.'},
+    {id:2, date:'2026-03-27', type:'academia', distance:0, time:0, pace:'--', paceNum:0, feeling:'otimo', recovery:[], notes:'Treino de Costas superior com personal'},
+    {id:3, date:'2026-03-28', type:'corrida', distance:6.23, time:39, pace:'6:16', paceNum:6.26, feeling:'otimo', recovery:['gelo'], notes:'Fiz banheira de gelo depois'},
+    {id:4, date:'2026-03-29', type:'corrida', distance:10, time:60, pace:'6:00', paceNum:6, feeling:'bem', recovery:[], notes:''},
+    {id:5, date:'2026-03-30', type:'corrida', distance:5, time:30, pace:'6:00', paceNum:6, feeling:'otimo', recovery:['gelo'], notes:''}
+  ],
+  meals: [
+    {id:1, date:'2026-03-26', time:'07:00', type:'cafe', desc:'ISO100 1 scoop + banana + 2col Dr.Peanut', protein:34, carb:35, cal:415, photo:null},
+    {id:2, date:'2026-03-26', time:'09:30', type:'pos_treino', desc:'Cuscuz + 2 ovos + cafe c/ leite s/ lactose', protein:21, carb:37, cal:356, photo:null},
+    {id:3, date:'2026-03-26', time:'12:30', type:'almoco', desc:'Arroz + 2 bifes carne + salada + verdura', protein:47, carb:48, cal:550, photo:null},
+    {id:4, date:'2026-03-26', time:'16:00', type:'lanche', desc:'Tapioca + 2 ovos', protein:15, carb:26, cal:266, photo:null},
+    {id:5, date:'2026-03-26', time:'20:00', type:'jantar', desc:'Carne/frango + arroz + salada + legumes', protein:38, carb:45, cal:465, photo:null},
+    {id:6, date:'2026-03-27', time:'07:00', type:'cafe', desc:'ISO100 1 scoop + banana + 2col Dr.Peanut', protein:34, carb:35, cal:415, photo:null},
+    {id:7, date:'2026-03-27', time:'09:30', type:'pos_treino', desc:'Cuscuz + 2 ovos + cafe c/ leite s/ lactose', protein:21, carb:37, cal:356, photo:null},
+    {id:8, date:'2026-03-27', time:'12:30', type:'almoco', desc:'Arroz + carne de sol + banana frita + mandioca + farofa carne seca', protein:51, carb:120, cal:980, photo:null},
+    {id:9, date:'2026-03-27', time:'16:00', type:'lanche', desc:'Tapioca + 2 ovos', protein:15, carb:26, cal:266, photo:null},
+    {id:10, date:'2026-03-27', time:'20:00', type:'jantar', desc:'Sanduiche com 70g de Frango', protein:70, carb:0, cal:330, photo:null},
+    {id:11, date:'2026-03-28', time:'07:00', type:'cafe', desc:'ISO100 1 scoop + banana + 2col Dr.Peanut', protein:34, carb:35, cal:415, photo:null},
+    {id:12, date:'2026-03-28', time:'09:30', type:'pos_treino', desc:'Cuscuz + 2 ovos + cafe c/ leite s/ lactose', protein:21, carb:37, cal:356, photo:null},
+    {id:13, date:'2026-03-28', time:'12:30', type:'almoco', desc:'Arroz + 2 bifes carne + salada + verdura', protein:47, carb:48, cal:550, photo:null},
+    {id:14, date:'2026-03-28', time:'16:00', type:'lanche', desc:'Tapioca + 2 ovos', protein:15, carb:26, cal:266, photo:null},
+    {id:15, date:'2026-03-28', time:'20:00', type:'jantar', desc:'Sashimi + sushi + temaki + pratos quentes', protein:55, carb:65, cal:850, photo:null},
+    {id:16, date:'2026-03-29', time:'07:00', type:'cafe', desc:'ISO100 1 scoop + banana + 2col Dr.Peanut', protein:34, carb:35, cal:415, photo:null},
+    {id:17, date:'2026-03-29', time:'11:30', type:'pos_treino', desc:'Tapioca + 2 ovos + cafe c/ leite', protein:19, carb:32, cal:326, photo:null},
+    {id:18, date:'2026-03-29', time:'12:30', type:'almoco', desc:'Arroz + frango + salada grande + legumes', protein:46, carb:128, cal:865, photo:null},
+    {id:19, date:'2026-03-29', time:'20:00', type:'jantar', desc:'Carne/frango + arroz + salada (jantar tardio ~21:30)', protein:35, carb:45, cal:450, photo:null},
+    {id:20, date:'2026-03-30', time:'07:00', type:'cafe', desc:'ISO100 1 scoop + banana + 2col Dr.Peanut', protein:34, carb:35, cal:415, photo:null},
+    {id:21, date:'2026-03-30', time:'09:30', type:'pos_treino', desc:'Cuscuz + 2 ovos + cafe c/ leite s/ lactose', protein:21, carb:37, cal:356, photo:null}
+  ],
+  nextId: 6, nextMealId: 22
 };
 
 // API base: auto-detect if served from backend or opened as local file
@@ -830,21 +1185,85 @@ async function syncToServer() {
   _syncing = false;
 }
 
-async function loadFromServer() {
+// Deduplicate meals: remove exact duplicates (same date + type + desc + protein)
+function deduplicateMeals() {
+  const seen = new Set();
+  const clean = [];
+  DATA.meals.forEach(m => {
+    const key = `${m.date}|${m.type}|${m.desc}|${m.protein}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      clean.push(m);
+    }
+  });
+  if (clean.length < DATA.meals.length) {
+    console.log(`Deduplicated: removed ${DATA.meals.length - clean.length} duplicate meals`);
+    DATA.meals = clean;
+    saveData();
+  }
+}
+
+async function loadFromServer(silent) {
   try {
-    const res = await fetch(API_BASE + '/api/data');
+    const res = await fetch(API_BASE + '/api/data', { cache: 'no-store' });
     if (res.ok) {
       const serverData = await res.json();
-      // Use server data if it has more content than local
-      if (serverData && (serverData.logs.length >= DATA.logs.length || serverData.meals.length >= DATA.meals.length)) {
-        DATA = serverData;
+      if (serverData && serverData.logs && serverData.meals) {
+        // Merge: keep all unique logs and meals from both local and server
+        const mergedLogs = [...DATA.logs];
+        serverData.logs.forEach(sl => {
+          const exists = mergedLogs.some(l => l.id === sl.id || (l.date === sl.date && l.type === sl.type && l.distance === sl.distance && l.time === sl.time));
+          if (!exists) mergedLogs.push(sl);
+        });
+        const mergedMeals = [...DATA.meals];
+        serverData.meals.forEach(sm => {
+          const exists = mergedMeals.some(m => m.date === sm.date && m.type === sm.type && m.desc === sm.desc && m.protein === sm.protein);
+          if (!exists) mergedMeals.push(sm);
+        });
+        DATA.logs = mergedLogs;
+        DATA.meals = mergedMeals;
+        DATA.nextId = Math.max(DATA.nextId || 1, serverData.nextId || 1);
+        DATA.nextMealId = Math.max(DATA.nextMealId || 1, serverData.nextMealId || 1);
+        if (serverData.athlete) DATA.athlete = serverData.athlete;
+        deduplicateMeals();
         try { localStorage.setItem('runcoach_data', JSON.stringify(DATA)); } catch(e){}
+        // Update the selected date to today on refresh
+        nutriSelectedDate = todayStr();
         updateUI(); renderNutrition();
-        console.log('Data loaded from server');
+        if (!silent) showToast('Dados atualizados!');
+        console.log('Data merged from server:', DATA.logs.length, 'logs,', DATA.meals.length, 'meals');
+        // Push merged data back to server
+        syncToServer();
       }
     }
   } catch(e) { console.log('Server not available, using local data'); }
 }
+
+// Full refresh: reload date, sync from server, update everything
+async function fullRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  if (btn) { btn.classList.add('spinning'); }
+  nutriSelectedDate = todayStr();
+  document.getElementById('logDate').value = todayStr();
+  await loadFromServer(false);
+  updateUI(); renderNutrition();
+  if (btn) { setTimeout(() => btn.classList.remove('spinning'), 600); }
+}
+
+// Auto-refresh when app comes back to foreground (iPhone PWA / tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    console.log('App visible - refreshing data');
+    fullRefresh();
+  }
+});
+
+// Auto-refresh every 30 minutes while app is open
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    loadFromServer(true);
+  }
+}, 30 * 60 * 1000);
 
 // ===== WEEK PLAN (Dom-Sab) =====
 function generateWeekPlan(ref) {
@@ -1248,18 +1667,20 @@ function renderNutrition() {
       </div>
     </div>`;
 
-  // Meal slots
+  // Meal slots - show only the most recent entry per slot (after dedup)
   const todayMeals = getMealsForDate(nutriSelectedDate);
   const slotsHtml = MEAL_PLAN.map(slot => {
     const logged = todayMeals.filter(m=>m.type===slot.id);
     const isLogged = logged.length > 0;
-    const totalProt = logged.reduce((s,m)=>s+m.protein,0);
-    const loggedTime = isLogged && logged[logged.length-1].time ? logged[logged.length-1].time : '';
+    // Use only the last (most recent) entry per slot for display
+    const lastEntry = isLogged ? logged[logged.length-1] : null;
+    const totalProt = lastEntry ? lastEntry.protein : 0;
+    const loggedTime = lastEntry && lastEntry.time ? lastEntry.time : '';
     return `<div class="meal-slot ${isLogged?'logged':''}" onclick="logMealFromSlot('${slot.id}')">
       <div class="meal-icon">${slot.icon}</div>
       <div class="meal-info">
         <div class="meal-name">${slot.name} <span style="color:var(--text3);font-size:11px;">${isLogged&&loggedTime ? loggedTime : slot.time}</span></div>
-        ${isLogged ? `<div class="meal-macros">${totalProt}g prot | ${logged.map(m=>m.desc).join(', ')}</div>` : `<div class="meal-suggestion">${slot.suggestion}</div>`}
+        ${isLogged ? `<div class="meal-macros">${totalProt}g prot | ${lastEntry.desc}</div>` : `<div class="meal-suggestion">${slot.suggestion}</div>`}
       </div>
       <div class="meal-check">${isLogged?'&#10003;':''}</div>
       ${isLogged?`<button class="history-edit" onclick="event.stopPropagation();editMeal(${logged[logged.length-1].id})" title="Editar">&#9998;</button>`:''}
@@ -1320,11 +1741,18 @@ function updateUI() {
 
   const plan=generateWeekPlan(now.toISOString().slice(0,10)), dayIdx=now.getDay();
   const sun=getSunday(now), sat=getSaturday(now);
-  const wkTarget=plan.reduce((s,d)=>s+d.km,0);
-  const wkRuns=DATA.logs.filter(l=>{const ld=new Date(l.date+'T12:00:00'); return ld>=sun&&ld<=sat&&l.type==='corrida';});
-  const wkDone=wkRuns.reduce((s,l)=>s+l.distance,0), wkLeft=Math.max(0,wkTarget-wkDone);
-  const wkPct=wkTarget>0?Math.min(100,Math.round(wkDone/wkTarget*100)):0;
+  const wkTargetKm=plan.reduce((s,d)=>s+d.km,0);
+  const wkTargetSessions=plan.filter(d=>d.km>0||d.type==='gym'||d.type==='tennis').length; // all training days
+
+  // ALL logs in the week (not just corrida)
+  const wkAllLogs=DATA.logs.filter(l=>{const ld=new Date(l.date+'T12:00:00'); return ld>=sun&&ld<=sat;});
+  const wkRuns=wkAllLogs.filter(l=>l.type==='corrida');
+  const wkDoneKm=wkRuns.reduce((s,l)=>s+l.distance,0);
+  const wkLeftKm=Math.max(0,wkTargetKm-wkDoneKm);
+  const wkPct=wkTargetKm>0?Math.min(100,Math.round(wkDoneKm/wkTargetKm*100)):0;
   const avgPN=wkRuns.length?wkRuns.reduce((s,l)=>s+l.paceNum,0)/wkRuns.length:0;
+  // Count unique training days (any type of training)
+  const wkTrainingDays=new Set(wkAllLogs.map(l=>l.date)).size;
 
   // Today macros for stats bar
   const macros = getTodayMacros();
@@ -1339,13 +1767,13 @@ function updateUI() {
       <div class="week-goal-pct" style="color:var(--purple);font-size:12px;">${macros.protein}/${PROTEIN_GOAL}g prot</div>
     </div>
     <div class="week-goal-stats">
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--accent)">${wkDone.toFixed(1)}</div><div class="week-goal-stat-label">Km Feitos</div></div>
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--cyan)">${wkTarget}</div><div class="week-goal-stat-label">Meta Km</div></div>
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:${wkLeft>0?'var(--yellow)':'var(--green)'}">${wkLeft.toFixed(1)}</div><div class="week-goal-stat-label">Km Faltam</div></div>
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--green)">${wkRuns.length}/${plan.filter(d=>d.km>0).length}</div><div class="week-goal-stat-label">Treinos</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--accent)">${wkDoneKm.toFixed(1)}</div><div class="week-goal-stat-label">Km Feitos</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--cyan)">${wkTargetKm}</div><div class="week-goal-stat-label">Meta Km</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:${wkLeftKm>0?'var(--yellow)':'var(--green)'}">${wkLeftKm.toFixed(1)}</div><div class="week-goal-stat-label">Km Faltam</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--green)">${wkTrainingDays}/${wkTargetSessions}</div><div class="week-goal-stat-label">Treinos</div></div>
     </div>`;
 
-  document.getElementById('weekKm').textContent=wkDone.toFixed(1);
+  document.getElementById('weekKm').textContent=wkDoneKm.toFixed(1);
   document.getElementById('avgPace').textContent=avgPN?calcPace(1,avgPN):'--:--';
 
   // Today card
@@ -1381,6 +1809,9 @@ function updateUI() {
   else if(dl<=14) al='<strong>Taper:</strong> Reduza volume, mantenha intensidade.';
   else al='<strong>Foco:</strong> Consistencia > intensidade. Respeite os dias leves.';
   document.getElementById('alertText').innerHTML=al;
+
+  // Coach tips (contextual)
+  renderCoachTips();
 
   // Week grid
   const grid=document.getElementById('weekGrid'); grid.innerHTML='';
@@ -1487,16 +1918,30 @@ function showDayDetail(i) {
 function renderChart() {
   const canvas=document.getElementById('paceChart'); if(!canvas) return;
   const ctx=canvas.getContext('2d'), rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*2; canvas.height=360; canvas.style.width=rect.width+'px'; canvas.style.height='180px'; ctx.scale(2,2);
+  canvas.width=rect.width*2; canvas.height=440; canvas.style.width=rect.width+'px'; canvas.style.height='220px'; ctx.scale(2,2);
   const runs=DATA.logs.filter(l=>l.type==='corrida'&&l.paceNum>0);
-  if(!runs.length) { ctx.fillStyle='#64748b'; ctx.font='14px sans-serif'; ctx.fillText('Registre treinos para ver',20,90); return; }
-  const w=rect.width,h=180,pad={t:20,r:20,b:30,l:45},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+  if(!runs.length) { ctx.fillStyle='#64748b'; ctx.font='14px sans-serif'; ctx.fillText('Registre treinos para ver',20,110); return; }
+  const w=rect.width,h=220,pad={t:25,r:50,b:30,l:45},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
   const paces=runs.map(r=>r.paceNum),mnP=Math.min(...paces)-0.3,mxP=Math.max(...paces)+0.3;
+  const kms=runs.map(r=>r.distance||0),mxK=Math.max(...kms)+2,mnK=0;
+  // Grid lines
   ctx.strokeStyle='#334155';ctx.lineWidth=0.5;
-  for(let i=0;i<=4;i++){const y=pad.t+(ph*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillStyle='#64748b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(calcPace(1,mxP-(mxP-mnP)*i/4),pad.l-8,y+4);}
-  const tY=pad.t+ph*(mxP-5.5)/(mxP-mnP);ctx.strokeStyle='#22c55e';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,tY);ctx.lineTo(w-pad.r,tY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#22c55e';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Alvo 5:30',w-pad.r-50,tY-6);
+  for(let i=0;i<=4;i++){const y=pad.t+(ph*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
+  // Left axis - Pace
+  ctx.fillStyle='#f97316';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(calcPace(1,mxP-(mxP-mnP)*i/4),pad.l-8,y+4);
+  // Right axis - KM
+  ctx.fillStyle='#3b82f6';ctx.textAlign='left';ctx.fillText((mxK-(mxK-mnK)*i/4).toFixed(1)+'km',w-pad.r+6,y+4);}
+  // Pace target line 5:30
+  const tY=pad.t+ph*(mxP-5.5)/(mxP-mnP);if(tY>=pad.t&&tY<=pad.t+ph){ctx.strokeStyle='#22c55e';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,tY);ctx.lineTo(w-pad.r,tY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#22c55e';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('Alvo 5:30',pad.l+pw/2,tY-6);}
+  // KM bars (behind lines)
+  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1));const km=r.distance||0;const bh=ph*(km/mxK);const y=pad.t+ph-bh;const bw=Math.min(28,pw/(runs.length||1)-6);ctx.fillStyle='rgba(59,130,246,0.2)';ctx.beginPath();ctx.roundRect(x-bw/2,y,bw,bh,3);ctx.fill();ctx.fillStyle='#3b82f6';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.fillText(km.toFixed(1)+'km',x,y-4);});
+  // Pace line
   if(runs.length>1){ctx.beginPath();ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.lineJoin='round';runs.forEach((r,i)=>{const x=pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();}
-  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();ctx.strokeStyle='#0f172a';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#f1f5f9';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(r.pace,x,y-12);const d=new Date(r.date+'T12:00:00');ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);});
+  // Pace dots
+  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();ctx.strokeStyle='#0f172a';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#f1f5f9';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(r.pace,x,y-14);const d=new Date(r.date+'T12:00:00');ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);});
+  // Legend
+  ctx.fillStyle='#f97316';ctx.beginPath();ctx.arc(pad.l+10,h-18,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#94a3b8';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Pace',pad.l+18,h-15);
+  ctx.fillStyle='rgba(59,130,246,0.4)';ctx.fillRect(pad.l+55,h-22,12,8);ctx.fillStyle='#94a3b8';ctx.fillText('KM',pad.l+71,h-15);
 }
 
 function renderProteinChart() {
@@ -1527,13 +1972,14 @@ function exportData() { const j=JSON.stringify(DATA,null,2),b=new Blob([j],{type
 function resetAllData() { if(confirm('Resetar todos os dados?')) { DATA=JSON.parse(JSON.stringify(DEFAULT_DATA)); saveData(); updateUI(); renderNutrition(); showToast('Dados resetados'); } }
 
 // ===== INIT =====
+deduplicateMeals(); // Clean duplicates on startup
 document.getElementById('logDate').value = todayStr();
 updateUI();
 renderNutrition();
 renderPresets();
 
-// Load from server after initial render (non-blocking)
-loadFromServer();
+// Load from server after initial render (non-blocking, silent)
+loadFromServer(true);
 </script>
 </body>
 </html>
