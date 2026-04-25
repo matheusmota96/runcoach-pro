@@ -5,21 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#050914">
+<meta name="theme-color" content="#0a0a0c" id="metaThemeColor">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Mota 70.3 Coach</title>
 <style>
-:root {
-  --bg: #050914; --bg2: #0d1424; --bg3: #1c2438;
+:root, :root[data-theme="dark"] {
+  --bg: #0a0a0c; --bg2: #15151a; --bg3: #26262e;
+  --surface: #15151a; --surface2: #1d1d24; --border: #26262e;
   --accent: #e30a1f; --accent2: #ff2a3d;
   --orange: #ff6b1a; --orange2: #ffa64d;
   --green: #22c55e; --red: #ef4444; --yellow: #fbbf24;
   --blue: #3b82f6; --cyan: #06b6d4; --purple: #a855f7;
   --swim: #00b8d4; --bike: #ff6b1a; --run: #e30a1f; --gym: #a855f7; --brick: #fbbf24;
-  --text: #ffffff; --text2: #a0aec0; --text3: #6b7388;
+  --text: #ffffff; --text2: #a8b0bd; --text3: #6b7388;
+  --header-bg: linear-gradient(135deg, #e30a1f 0%, #6a0410 60%, #0a0a0c 100%);
+  --header-text: #ffffff; --header-text2: rgba(255,255,255,0.75);
+  --nav-bg: #0f0f14; --nav-border: #26262e;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow: 0 -2px 10px rgba(0,0,0,0.4);
+  --logo-mark: #e30a1f; --logo-text: #ffffff;
   --radius: 16px;
+}
+:root[data-theme="light"] {
+  --bg: #ffffff; --bg2: #f7f8fb; --bg3: #e4e6ec;
+  --surface: #ffffff; --surface2: #f7f8fb; --border: #e4e6ec;
+  --accent: #d8001a; --accent2: #ff1f33;
+  --orange: #ff6b1a; --orange2: #ffa64d;
+  --green: #16a34a; --red: #dc2626; --yellow: #d97706;
+  --blue: #2563eb; --cyan: #0891b2; --purple: #7c3aed;
+  --swim: #0891b2; --bike: #ea580c; --run: #d8001a; --gym: #7c3aed; --brick: #d97706;
+  --text: #0a0a0c; --text2: #4a5568; --text3: #8a93a6;
+  --header-bg: #ffffff;
+  --header-text: #0a0a0c; --header-text2: #4a5568;
+  --nav-bg: #ffffff; --nav-border: #e4e6ec;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
+  --shadow: 0 -2px 12px rgba(15,23,42,0.06);
+  --logo-mark: #d8001a; --logo-text: #0a0a0c;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -31,25 +54,49 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #e30a1f 0%, #8a0512 60%, #050914 100%);
+  background: var(--header-bg);
+  color: var(--header-text);
   padding: 24px 20px 20px; position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--border);
 }
-.header::after {
+:root[data-theme="dark"] .header::after {
   content:''; position:absolute; top:-60%; right:-30%;
   width:240px; height:240px;
   background:radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
   border-radius:50%;
 }
-.header::before {
-  content:'M·70.3'; position:absolute; bottom:-8px; right:14px;
-  font-size:46px; font-weight:900; letter-spacing:-1px;
-  color:rgba(255,255,255,0.06); pointer-events:none;
-}
 .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.header-greeting { font-size:14px; opacity:0.85; }
-.header-name { font-size:24px; font-weight:800; }
-.header-date { font-size:13px; opacity:0.7; margin-top:2px; }
-.header-badge { background:rgba(0,0,0,0.2); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.header-greeting { font-size:14px; color:var(--header-text2); }
+.header-name { font-size:24px; font-weight:800; color:var(--header-text); }
+.header-date { font-size:13px; color:var(--header-text2); margin-top:2px; }
+.header-badge {
+  background: rgba(0,0,0,0.18); color: var(--header-text);
+  padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700;
+}
+:root[data-theme="light"] .header-badge {
+  background: var(--accent); color: #ffffff;
+}
+
+/* Brand logo (M·70.3) */
+.brand-logo {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:14px; user-select:none;
+}
+.brand-logo-mark {
+  width:34px; height:34px; flex-shrink:0;
+}
+.brand-logo-text {
+  font-size:13px; font-weight:900; letter-spacing:2px;
+  color: var(--logo-text); line-height:1;
+}
+.brand-logo-text small {
+  display:block; font-size:9px; font-weight:600; letter-spacing:3px;
+  color: var(--header-text2); margin-top:3px;
+}
+:root[data-theme="dark"] .brand-logo-text { color:#ffffff; }
+:root[data-theme="dark"] .brand-logo-text small { color:rgba(255,255,255,0.65); }
+.refresh-btn { background:none; border:none; color:var(--header-text2); font-size:20px; cursor:pointer; padding:6px; border-radius:50%; transition:all 0.3s; }
+.refresh-btn:active { background: rgba(0,0,0,0.1); }
 
 /* Countdown */
 .countdown-bar {
@@ -286,10 +333,10 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 /* Bottom Nav */
 .bottom-nav {
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-  width:100%; max-width:480px; background:var(--bg2);
-  border-top:1px solid var(--bg3); display:flex;
+  width:100%; max-width:480px; background:var(--nav-bg);
+  border-top:1px solid var(--nav-border); display:flex;
   padding:8px 0; padding-bottom:max(8px, env(safe-area-inset-bottom));
-  z-index:9999; box-shadow:0 -2px 10px rgba(0,0,0,0.3);
+  z-index:9999; box-shadow: var(--shadow);
 }
 .nav-item {
   flex:1; display:flex; flex-direction:column; align-items:center;
@@ -298,7 +345,49 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 }
 .nav-item.active { color:var(--accent); }
 .nav-icon { font-size:18px; margin-bottom:2px; }
-.nav-label { font-size:9px; font-weight:600; }
+.nav-label { font-size:9px; font-weight:700; }
+.nav-item.active .nav-label { font-weight:800; }
+
+/* Theme-aware adjustments for cards / forms in light mode */
+:root[data-theme="light"] body { background: var(--bg); }
+:root[data-theme="light"] .countdown-bar,
+:root[data-theme="light"] .week-goal,
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .mod-stat,
+:root[data-theme="light"] .today-card,
+:root[data-theme="light"] .analysis-card,
+:root[data-theme="light"] .day-row,
+:root[data-theme="light"] .log-form,
+:root[data-theme="light"] .meal-slot,
+:root[data-theme="light"] .race-card,
+:root[data-theme="light"] .history-day-card,
+:root[data-theme="light"] .chart-container,
+:root[data-theme="light"] .summary-card,
+:root[data-theme="light"] .form-input,
+:root[data-theme="light"] .feeling-btn {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+:root[data-theme="light"] .form-input { background:#ffffff; }
+:root[data-theme="light"] .feeling-btn { background:var(--bg2); color:var(--text2); }
+:root[data-theme="light"] .feeling-btn.selected { background:rgba(216,0,26,0.08); color:var(--accent); border-color:var(--accent); }
+:root[data-theme="light"] .stats-row,
+:root[data-theme="light"] .mod-stats { background: var(--border); }
+:root[data-theme="light"] .phase-bar { background:var(--surface); border-bottom-color:var(--border); }
+:root[data-theme="light"] .phase-pill { background:var(--bg2); color:var(--text2); }
+:root[data-theme="light"] .phase-pill.active { color:#ffffff; }
+:root[data-theme="light"] .day-badge.easy { background:rgba(22,163,74,0.12); color:var(--green); }
+:root[data-theme="light"] .day-badge.moderate { background:rgba(217,119,6,0.12); color:var(--yellow); }
+:root[data-theme="light"] .day-badge.hard { background:rgba(220,38,38,0.12); color:var(--red); }
+:root[data-theme="light"] .countdown-number { color:var(--accent); }
+:root[data-theme="light"] .race-hero { box-shadow:0 8px 24px rgba(216,0,26,0.18); }
+
+/* Theme toggle */
+.theme-toggle { display:flex; gap:8px; background:var(--bg2); border-radius:14px; padding:6px; margin-top:10px; }
+.theme-opt { flex:1; padding:12px 14px; border:none; background:transparent; border-radius:10px; color:var(--text3); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+.theme-opt.active { background:var(--surface); color:var(--accent); box-shadow: var(--shadow-sm); }
 
 /* Toast */
 .toast {
@@ -446,6 +535,15 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 <div class="app" id="app">
   <!-- HEADER -->
   <div class="header">
+    <div class="brand-logo">
+      <svg class="brand-logo-mark" viewBox="0 0 60 60" aria-hidden="true">
+        <circle cx="30" cy="11" r="7" fill="var(--logo-mark)"/>
+        <path d="M14 50 L14 26 Q14 22 18 22 L26 22 Q30 22 30 26 L30 50 M30 26 Q30 22 34 22 L42 22 Q46 22 46 26 L46 50" stroke="var(--logo-mark)" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="brand-logo-text">
+        MOTA<small>70.3 COACH</small>
+      </div>
+    </div>
     <div class="header-top">
       <div>
         <div class="header-greeting" id="greeting">Bom dia</div>
@@ -453,7 +551,7 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         <div class="header-date" id="headerDate"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button id="refreshBtn" onclick="fullRefresh()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:6px;border-radius:50%;transition:all 0.3s;" title="Atualizar dados">&#x21bb;</button>
+        <button id="refreshBtn" class="refresh-btn" onclick="fullRefresh()" title="Atualizar dados">&#x21bb;</button>
         <div class="header-badge" id="weekBadge">Semana 1</div>
       </div>
     </div>
@@ -895,6 +993,16 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 
   <!-- ==================== TAB: SETTINGS ==================== -->
   <div class="tab-content" id="tab-settings">
+    <div class="section">
+      <div class="section-title"><span>&#127912;</span> APARENCIA</div>
+      <div class="analysis-card">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">Escolha o tema do app. A preferencia fica salva no aparelho.</div>
+        <div class="theme-toggle" id="themeToggle">
+          <button class="theme-opt" data-theme="light" onclick="setTheme('light')"><span>&#9728;&#65039;</span> Modo Dia</button>
+          <button class="theme-opt" data-theme="dark" onclick="setTheme('dark')"><span>&#127769;</span> Modo Noite</button>
+        </div>
+      </div>
+    </div>
     <div class="section">
       <div class="section-title"><span>&#128276;</span> WHATSAPP COACH</div>
       <div class="whatsapp-status">
@@ -2497,55 +2605,66 @@ function showDayDetail(i) {
 }
 
 // ===== CHARTS =====
+function getThemeColors() {
+  const cs = getComputedStyle(document.documentElement);
+  return {
+    grid: cs.getPropertyValue('--border').trim() || '#26262e',
+    text: cs.getPropertyValue('--text').trim() || '#ffffff',
+    text2: cs.getPropertyValue('--text2').trim() || '#a8b0bd',
+    text3: cs.getPropertyValue('--text3').trim() || '#6b7388',
+    accent: cs.getPropertyValue('--accent').trim() || '#e30a1f',
+    bg: cs.getPropertyValue('--bg').trim() || '#0a0a0c',
+    blue: cs.getPropertyValue('--blue').trim() || '#3b82f6',
+    purple: cs.getPropertyValue('--purple').trim() || '#a855f7',
+    green: cs.getPropertyValue('--green').trim() || '#22c55e'
+  };
+}
 function renderChart() {
   const canvas=document.getElementById('paceChart'); if(!canvas) return;
   const ctx=canvas.getContext('2d'), rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*2; canvas.height=440; canvas.style.width=rect.width+'px'; canvas.style.height='220px'; ctx.scale(2,2);
+  canvas.width=rect.width*2; canvas.height=440; canvas.style.width=rect.width+'px'; canvas.style.height='220px';
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.scale(2,2);
+  const C = getThemeColors();
   const runs=DATA.logs.filter(l=>l.type==='corrida'&&l.paceNum>0);
-  if(!runs.length) { ctx.fillStyle='#64748b'; ctx.font='14px sans-serif'; ctx.fillText('Registre treinos para ver',20,110); return; }
+  if(!runs.length) { ctx.fillStyle=C.text3; ctx.font='14px sans-serif'; ctx.fillText('Registre treinos para ver',20,110); return; }
   const w=rect.width,h=220,pad={t:25,r:50,b:30,l:45},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
   const paces=runs.map(r=>r.paceNum),mnP=Math.min(...paces)-0.3,mxP=Math.max(...paces)+0.3;
   const kms=runs.map(r=>r.distance||0),mxK=Math.max(...kms)+2,mnK=0;
   // Grid lines
-  ctx.strokeStyle='#334155';ctx.lineWidth=0.5;
+  ctx.strokeStyle=C.grid;ctx.lineWidth=0.5;
   for(let i=0;i<=4;i++){const y=pad.t+(ph*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
-  // Left axis - Pace
-  ctx.fillStyle='#f97316';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(calcPace(1,mxP-(mxP-mnP)*i/4),pad.l-8,y+4);
-  // Right axis - KM
-  ctx.fillStyle='#3b82f6';ctx.textAlign='left';ctx.fillText((mxK-(mxK-mnK)*i/4).toFixed(1)+'km',w-pad.r+6,y+4);}
-  // Pace target line 5:30
-  const tY=pad.t+ph*(mxP-5.5)/(mxP-mnP);if(tY>=pad.t&&tY<=pad.t+ph){ctx.strokeStyle='#22c55e';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,tY);ctx.lineTo(w-pad.r,tY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#22c55e';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('Alvo 5:30',pad.l+pw/2,tY-6);}
-  // KM bars (behind lines)
-  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1));const km=r.distance||0;const bh=ph*(km/mxK);const y=pad.t+ph-bh;const bw=Math.min(28,pw/(runs.length||1)-6);ctx.fillStyle='rgba(59,130,246,0.2)';ctx.beginPath();ctx.roundRect(x-bw/2,y,bw,bh,3);ctx.fill();ctx.fillStyle='#3b82f6';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.fillText(km.toFixed(1)+'km',x,y-4);});
-  // Pace line
-  if(runs.length>1){ctx.beginPath();ctx.strokeStyle='#f97316';ctx.lineWidth=2.5;ctx.lineJoin='round';runs.forEach((r,i)=>{const x=pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();}
-  // Pace dots
-  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();ctx.strokeStyle='#0f172a';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#f1f5f9';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(r.pace,x,y-14);const d=new Date(r.date+'T12:00:00');ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);});
-  // Legend
-  ctx.fillStyle='#f97316';ctx.beginPath();ctx.arc(pad.l+10,h-18,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#94a3b8';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Pace',pad.l+18,h-15);
-  ctx.fillStyle='rgba(59,130,246,0.4)';ctx.fillRect(pad.l+55,h-22,12,8);ctx.fillStyle='#94a3b8';ctx.fillText('KM',pad.l+71,h-15);
+  ctx.fillStyle=C.accent;ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(calcPace(1,mxP-(mxP-mnP)*i/4),pad.l-8,y+4);
+  ctx.fillStyle=C.blue;ctx.textAlign='left';ctx.fillText((mxK-(mxK-mnK)*i/4).toFixed(1)+'km',w-pad.r+6,y+4);}
+  const tY=pad.t+ph*(mxP-5.5)/(mxP-mnP);if(tY>=pad.t&&tY<=pad.t+ph){ctx.strokeStyle=C.green;ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,tY);ctx.lineTo(w-pad.r,tY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=C.green;ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('Alvo 5:30',pad.l+pw/2,tY-6);}
+  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1));const km=r.distance||0;const bh=ph*(km/mxK);const y=pad.t+ph-bh;const bw=Math.min(28,pw/(runs.length||1)-6);ctx.fillStyle=C.blue+'33';ctx.beginPath();ctx.roundRect(x-bw/2,y,bw,bh,3);ctx.fill();ctx.fillStyle=C.blue;ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.fillText(km.toFixed(1)+'km',x,y-4);});
+  if(runs.length>1){ctx.beginPath();ctx.strokeStyle=C.accent;ctx.lineWidth=2.5;ctx.lineJoin='round';runs.forEach((r,i)=>{const x=pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();}
+  runs.forEach((r,i)=>{const x=runs.length===1?pad.l+pw/2:pad.l+(pw*i/(runs.length-1)),y=pad.t+ph*(mxP-r.paceNum)/(mxP-mnP);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=C.accent;ctx.fill();ctx.strokeStyle=C.bg;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=C.text;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(r.pace,x,y-14);const d=new Date(r.date+'T12:00:00');ctx.fillStyle=C.text3;ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);});
+  ctx.fillStyle=C.accent;ctx.beginPath();ctx.arc(pad.l+10,h-18,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.text2;ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Pace',pad.l+18,h-15);
+  ctx.fillStyle=C.blue+'66';ctx.fillRect(pad.l+55,h-22,12,8);ctx.fillStyle=C.text2;ctx.fillText('KM',pad.l+71,h-15);
 }
 
 function renderProteinChart() {
   const canvas=document.getElementById('proteinChart'); if(!canvas) return;
   const ctx=canvas.getContext('2d'), rect=canvas.parentElement.getBoundingClientRect();
-  canvas.width=rect.width*2; canvas.height=360; canvas.style.width=rect.width+'px'; canvas.style.height='180px'; ctx.scale(2,2);
+  canvas.width=rect.width*2; canvas.height=360; canvas.style.width=rect.width+'px'; canvas.style.height='180px';
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.scale(2,2);
+  const C = getThemeColors();
   const dates=[...new Set(DATA.meals.map(m=>m.date))].sort();
-  if(!dates.length) { ctx.fillStyle='#64748b'; ctx.font='14px sans-serif'; ctx.fillText('Registre refeicoes para ver',20,90); return; }
+  if(!dates.length) { ctx.fillStyle=C.text3; ctx.font='14px sans-serif'; ctx.fillText('Registre refeicoes para ver',20,90); return; }
   const dailyP=dates.map(d=>DATA.meals.filter(m=>m.date===d).reduce((s,m)=>s+m.protein,0));
   const w=rect.width,h=180,pad={t:20,r:20,b:30,l:40},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
   const mx=Math.max(PROTEIN_GOAL+20,...dailyP);
-  ctx.strokeStyle='#334155';ctx.lineWidth=0.5;
-  for(let i=0;i<=4;i++){const y=pad.t+(ph*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillStyle='#64748b';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(Math.round(mx-mx*i/4)+'g',pad.l-6,y+4);}
-  const gY=pad.t+ph*(1-PROTEIN_GOAL/mx);ctx.strokeStyle='#a855f7';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,gY);ctx.lineTo(w-pad.r,gY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#a855f7';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Meta 140g',w-pad.r-55,gY-6);
+  ctx.strokeStyle=C.grid;ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){const y=pad.t+(ph*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillStyle=C.text3;ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(Math.round(mx-mx*i/4)+'g',pad.l-6,y+4);}
+  const gY=pad.t+ph*(1-PROTEIN_GOAL/mx);ctx.strokeStyle=C.purple;ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,gY);ctx.lineTo(w-pad.r,gY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=C.purple;ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('Meta 140g',w-pad.r-55,gY-6);
   const bw=Math.min(30,pw/dates.length-4);
   dailyP.forEach((p,i)=>{
     const x=dates.length===1?pad.l+pw/2:pad.l+(pw*i/(dates.length-1));
     const bh=ph*(p/mx), y=pad.t+ph-bh;
-    ctx.fillStyle=p>=PROTEIN_GOAL?'#a855f7':'#64748b';
+    ctx.fillStyle=p>=PROTEIN_GOAL?C.purple:C.text3;
     ctx.beginPath(); ctx.roundRect(x-bw/2,y,bw,bh,4); ctx.fill();
-    ctx.fillStyle='#f1f5f9';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(p+'g',x,y-8);
-    const d=new Date(dates[i]+'T12:00:00');ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);
+    ctx.fillStyle=C.text;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(p+'g',x,y-8);
+    const d=new Date(dates[i]+'T12:00:00');ctx.fillStyle=C.text3;ctx.font='9px sans-serif';ctx.fillText(`${d.getDate()}/${d.getMonth()+1}`,x,h-8);
   });
 }
 
@@ -2688,7 +2807,30 @@ function renderRaces() {
 function exportData() { const j=JSON.stringify(DATA,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='mota_70_3_data_'+todayStr()+'.json';a.click();showToast('Exportado!'); }
 function resetAllData() { if(confirm('Resetar todos os dados?')) { DATA=JSON.parse(JSON.stringify(DEFAULT_DATA)); saveData(); updateUI(); renderNutrition(); showToast('Dados resetados'); } }
 
+// ===== THEME =====
+function setTheme(mode) {
+  const theme = (mode === 'light') ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem('mota_70_3_theme', theme); } catch(e){}
+  // Update theme-color meta for iOS PWA status bar
+  const meta = document.getElementById('metaThemeColor');
+  if (meta) meta.setAttribute('content', theme === 'light' ? '#ffffff' : '#0a0a0c');
+  // Update toggle UI
+  document.querySelectorAll('#themeToggle .theme-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+  // Trigger redraw of canvas charts (they use hardcoded grid colors)
+  if (typeof renderChart === 'function') { try { renderChart(); } catch(e){} }
+  if (typeof renderProteinChart === 'function') { try { renderProteinChart(); } catch(e){} }
+}
+function loadTheme() {
+  let saved = 'dark';
+  try { saved = localStorage.getItem('mota_70_3_theme') || 'dark'; } catch(e){}
+  setTheme(saved);
+}
+
 // ===== INIT =====
+loadTheme();
 DATA = migrateData(DATA);
 deduplicateMeals(); // Clean duplicates on startup
 document.getElementById('logDate').value = todayStr();
