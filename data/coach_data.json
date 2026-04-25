@@ -5,7 +5,8 @@
     "weight": 78,
     "bf": 18.8,
     "tmb": 1687,
-    "phone": "+5561982550045"
+    "phone": "+5561982550045",
+    "plan": "ironman_70_3"
   },
   "logs": [
     {
@@ -25,5 +26,36 @@
   ],
   "meals": [],
   "nextId": 2,
-  "nextMealId": 1
+  "nextMealId": 1,
+  "races": [
+    {
+      "id": 1,
+      "name": "LiveRun 21km",
+      "type": "meia_maratona",
+      "date": "2026-04-19",
+      "distance": 21.4,
+      "status": "concluida",
+      "timeMin": 130,
+      "paceNum": 6.07,
+      "pace": "6:04",
+      "feeling": "cansado",
+      "goal": "Concluir 21k abaixo de 2h10",
+      "result": "2h10 - concluida",
+      "notes": "Primeira meia maratona. Concluida com sucesso."
+    },
+    {
+      "id": 2,
+      "name": "Ironman 70.3 Brasilia",
+      "type": "ironman_70_3",
+      "date": "2027-04-18",
+      "distance": 113,
+      "swimKm": 1.9,
+      "bikeKm": 90,
+      "runKm": 21.1,
+      "status": "planejada",
+      "goal": "Concluir bem, com seguranca e consistencia",
+      "notes": "Prova principal - 12 meses de preparacao."
+    }
+  ],
+  "nextRaceId": 3
 }

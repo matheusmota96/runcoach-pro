@@ -57,14 +57,48 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 const DATA_FILE = path.join(DATA_DIR, 'coach_data.json');
 
+const DEFAULT_RACES = [
+  { id:1, name:'LiveRun 21km', type:'meia_maratona', date:'2026-04-19',
+    distance:21.4, status:'concluida', timeMin:130, paceNum:6.07, pace:'6:04',
+    feeling:'cansado', goal:'Concluir 21k abaixo de 2h10', result:'2h10 - concluida',
+    notes:'Primeira meia maratona. Concluida com sucesso.' },
+  { id:2, name:'Ironman 70.3 Brasilia', type:'ironman_70_3', date:'2027-04-18',
+    distance:113, swimKm:1.9, bikeKm:90, runKm:21.1,
+    status:'planejada', goal:'Concluir bem, com seguranca e consistencia',
+    notes:'Prova principal - 12 meses de preparacao.' }
+];
+
+function migrateServerData(data) {
+  if (!data.athlete) data.athlete = { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045' };
+  if (!data.athlete.plan) data.athlete.plan = 'ironman_70_3';
+  if (!Array.isArray(data.races) || !data.races.length) {
+    data.races = JSON.parse(JSON.stringify(DEFAULT_RACES));
+  } else {
+    if (!data.races.find(r => r.name === 'LiveRun 21km')) data.races.unshift(JSON.parse(JSON.stringify(DEFAULT_RACES[0])));
+    if (!data.races.find(r => r.type === 'ironman_70_3')) data.races.push(JSON.parse(JSON.stringify(DEFAULT_RACES[1])));
+  }
+  if (!data.nextRaceId) data.nextRaceId = Math.max(3, ...data.races.map(r => (r.id||0)+1));
+  if (!Array.isArray(data.logs)) data.logs = [];
+  if (!Array.isArray(data.meals)) data.meals = [];
+  if (!data.nextId) data.nextId = Math.max(1, ...data.logs.map(l => (l.id||0)+1));
+  if (!data.nextMealId) data.nextMealId = Math.max(1, ...data.meals.map(m => (m.id||0)+1));
+  return data;
+}
+
 function loadData() {
-  try { if (fs.existsSync(DATA_FILE)) return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch(e){ console.error('Error loading data:', e.message); }
-  return {
-    athlete: { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045' },
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      return migrateServerData(data);
+    }
+  } catch(e){ console.error('Error loading data:', e.message); }
+  return migrateServerData({
+    athlete: { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045', plan:'ironman_70_3' },
     logs: [{ id:1, date:'2026-03-26', type:'corrida', distance:6.23, time:37.38, pace:'6:00', paceNum:6.0, feeling:'moderado', recovery:['gelo'], notes:'Primeiro treino focado para meia maratona. Banheira de gelo apos treino.' }],
     meals: [],
-    nextId:2, nextMealId:1
-  };
+    races: JSON.parse(JSON.stringify(DEFAULT_RACES)),
+    nextId:2, nextMealId:1, nextRaceId:3
+  });
 }
 function saveData(data) {
   try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e){ console.error('Error saving data:', e.message); }
@@ -363,13 +397,36 @@ app.post('/api/sync', (req, res) => {
   try {
     const newData = req.body;
     if (newData && newData.logs && newData.meals) {
-      coachData = newData;
+      coachData = migrateServerData(newData);
       saveData(coachData);
       res.json({ success: true });
     } else {
       res.status(400).json({ success: false, error: 'Invalid data format' });
     }
   } catch(e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Races CRUD
+app.post('/api/race', (req, res) => {
+  req.body.id = coachData.nextRaceId++;
+  if (!Array.isArray(coachData.races)) coachData.races = [];
+  coachData.races.push(req.body);
+  saveData(coachData);
+  res.json({ success:true, id: req.body.id, data: coachData });
+});
+app.put('/api/race/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const idx = (coachData.races||[]).findIndex(r => r.id === id);
+  if (idx < 0) return res.status(404).json({ success:false, error:'Race not found' });
+  coachData.races[idx] = { ...coachData.races[idx], ...req.body, id };
+  saveData(coachData);
+  res.json({ success:true, data: coachData });
+});
+app.delete('/api/race/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  coachData.races = (coachData.races||[]).filter(r => r.id !== id);
+  saveData(coachData);
+  res.json({ success:true, data: coachData });
 });
 
 // Logs CRUD
