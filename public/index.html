@@ -1681,15 +1681,66 @@ function generateWeekPlan(ref) {
 // ===== UTILS =====
 function getWeekNumber(d) { const s=new Date(PLAN_START); s.setHours(0,0,0,0); const dd=new Date(d); dd.setHours(0,0,0,0); return Math.max(1,Math.floor((dd-s)/604800000)+1); }
 function getSunday(d) { const r=new Date(d); r.setDate(r.getDate()-r.getDay()); r.setHours(0,0,0,0); return r; }
-function getSaturday(d) { const s=getSunday(d); s.setDate(s.getDate()+6); return s; }
+function getSaturday(d) { const s=getSunday(d); s.setDate(s.getDate()+6); s.setHours(23,59,59,999); return s; }
 function calcPace(km,min) { if(!km||!min) return '--:--'; const p=min/km; return Math.floor(p)+':'+String(Math.round((p-Math.floor(p))*60)).padStart(2,'0'); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmtDateBR(dateStr) { const d=new Date(dateStr+'T12:00:00'); const m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear(); }
-function isRunType(t) { return t==='corrida' || t==='run' || t==='brick'; }
-function getRunKm(l) { if (l.type==='corrida') return l.distance||0; if (l.type==='brick') return (l.brickRunKm||0); return 0; }
-function getBikeKm(l) { if (l.type==='bike') return l.distance||0; if (l.type==='brick') return (l.brickBikeKm||0); return 0; }
-function getSwimM(l) { if (l.type==='natacao') return l.swimMeters||0; return 0; }
-function isStrengthLog(l) { return l.type==='musculacao' || l.type==='academia'; }
+
+// Normalize workout type (handles legacy/variation: corrida/run/running, natacao/natação/swim, etc)
+function normalizeWorkoutType(raw) {
+  const v = String(raw||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  if (['corrida','run','running','correr'].includes(v)) return 'corrida';
+  if (['bike','ciclismo','cycling','rolo','bicicleta'].includes(v)) return 'bike';
+  if (['natacao','swim','swimming','nado'].includes(v)) return 'natacao';
+  if (['musculacao','academia','strength','forca','gym','musculation'].includes(v)) return 'musculacao';
+  if (['brick'].includes(v)) return 'brick';
+  if (['mobilidade','mobility','alongamento','yoga'].includes(v)) return 'mobilidade';
+  if (['descanso','rest','folga'].includes(v)) return 'descanso';
+  if (['tenis','tennis'].includes(v)) return 'tenis';
+  return v || 'corrida';
+}
+function isRunType(t) { const n=normalizeWorkoutType(t); return n==='corrida'||n==='brick'; }
+function getRunKm(l) {
+  const t = normalizeWorkoutType(l.type);
+  if (t==='corrida') return Number(l.distance||l.km||0);
+  if (t==='brick')   return Number(l.brickRunKm||0);
+  return 0;
+}
+function getBikeKm(l) {
+  const t = normalizeWorkoutType(l.type);
+  if (t==='bike')  return Number(l.distance||l.km||l.bikeKm||0);
+  if (t==='brick') return Number(l.brickBikeKm||0);
+  return 0;
+}
+function getSwimM(l) {
+  const t = normalizeWorkoutType(l.type);
+  if (t!=='natacao') return 0;
+  // Defensive: prefer swimMeters; fallback to meters/distance/distanceMeters; if distance < 50 assume km mistakenly
+  const m = Number(l.swimMeters ?? l.meters ?? l.distanceMeters ?? l.swimM ?? 0);
+  if (m > 0) return m;
+  const d = Number(l.distance||0);
+  if (!d) return 0;
+  return d < 50 ? d*1000 : d; // 0.8 -> 800m, 800 -> 800m
+}
+function isStrengthLog(l) { const t=normalizeWorkoutType(l.type); return t==='musculacao'; }
+
+// Centralized weekly stats
+function calculateWeekStats(logs, weekStart, weekEnd) {
+  const stats = { runKm:0, bikeKm:0, swimMeters:0, strengthSessions:0, totalSessions:0, days:new Set() };
+  (logs||[]).forEach(w => {
+    const ld = new Date((w.date||'')+'T12:00:00');
+    if (isNaN(ld) || ld < weekStart || ld > weekEnd) return;
+    const t = normalizeWorkoutType(w.type);
+    stats.runKm     += getRunKm(w);
+    stats.bikeKm    += getBikeKm(w);
+    stats.swimMeters+= getSwimM(w);
+    if (t==='musculacao') stats.strengthSessions++;
+    if (t!=='descanso' && t!=='mobilidade') stats.totalSessions++;
+    stats.days.add(w.date);
+  });
+  stats.trainingDays = stats.days.size;
+  return stats;
+}
 
 // Selected date for nutrition view (default: today)
 let nutriSelectedDate = todayStr();
@@ -1923,7 +1974,7 @@ function quickMeal(desc, prot, carb, cal) {
 
 // ===== SUBMIT WORKOUT (multi-modality) =====
 function submitLog() {
-  const type=document.getElementById('logType').value;
+  const type=normalizeWorkoutType(document.getElementById('logType').value);
   const date=document.getElementById('logDate').value||todayStr();
   const notes=document.getElementById('logNotes').value;
   const entry = { id:editingId||DATA.nextId++, date, type, feeling:selectedFeeling||'moderado', recovery:[...selectedRecovery], notes };
@@ -2239,18 +2290,21 @@ function updateUI() {
   const wkTargetSwimM=plan.reduce((s,d)=>s+(d.swimM||0),0);
   const wkTargetSessions=plan.filter(d=>d.type!=='rest').length;
 
-  // ALL logs in the week
-  const wkAllLogs=DATA.logs.filter(l=>{const ld=new Date(l.date+'T12:00:00'); return ld>=sun&&ld<=sat;});
-  const wkRuns=wkAllLogs.filter(l=>l.type==='corrida');
-  const wkRunKm=wkAllLogs.reduce((s,l)=>s+getRunKm(l),0);
-  const wkBikeKm=wkAllLogs.reduce((s,l)=>s+getBikeKm(l),0);
-  const wkSwimM=wkAllLogs.reduce((s,l)=>s+getSwimM(l),0);
-  const wkGymN=wkAllLogs.filter(isStrengthLog).length;
+  // ALL logs in the week (single source of truth)
+  const stats = calculateWeekStats(DATA.logs, sun, sat);
+  const wkRunKm  = stats.runKm;
+  const wkBikeKm = stats.bikeKm;
+  const wkSwimM  = stats.swimMeters;
+  const wkGymN   = stats.strengthSessions;
+  const wkRuns = DATA.logs.filter(l => {
+    const ld = new Date((l.date||'')+'T12:00:00');
+    return !isNaN(ld) && ld>=sun && ld<=sat && normalizeWorkoutType(l.type)==='corrida';
+  });
   const wkTotalKm = wkRunKm + wkBikeKm + (wkSwimM/1000);
   const wkTargetTotal = wkTargetRunKm + wkTargetBikeKm + (wkTargetSwimM/1000);
   const wkPct=wkTargetTotal>0?Math.min(100,Math.round(wkTotalKm/wkTargetTotal*100)):0;
   const avgPN=wkRuns.length?wkRuns.reduce((s,l)=>s+(l.paceNum||0),0)/wkRuns.length:0;
-  const wkTrainingDays=new Set(wkAllLogs.map(l=>l.date)).size;
+  const wkTrainingDays=stats.trainingDays;
 
   // Today macros for stats bar
   const macros = getTodayMacros();
@@ -2331,11 +2385,12 @@ function updateUI() {
     grid.innerHTML+=`<div class="day-row ${iT?'today':''}" onclick="showDayDetail(${i})"><div class="day-dot ${dc}"></div><div class="day-name">${d.day}</div><div class="day-workout">${d.title} ${ib}</div><div class="day-badge ${d.intensity}">${badgeText}</div></div>`;
   });
 
-  // Progress stats - per modality
-  const allR=DATA.logs.filter(l=>l.type==='corrida'), totRunKm=allR.reduce((s,l)=>s+(l.distance||0),0);
-  const allB=DATA.logs.filter(l=>l.type==='bike'), totBikeKm=allB.reduce((s,l)=>s+(l.distance||0),0);
-  const allS=DATA.logs.filter(l=>l.type==='natacao'), totSwimM=allS.reduce((s,l)=>s+(l.swimMeters||0),0);
-  const totSessions = DATA.logs.filter(l=>l.type!=='descanso'&&l.type!=='mobilidade').length;
+  // Progress stats - per modality (uses normalized helpers)
+  const allR=DATA.logs.filter(l=>normalizeWorkoutType(l.type)==='corrida');
+  const totRunKm=DATA.logs.reduce((s,l)=>s+getRunKm(l),0);
+  const totBikeKm=DATA.logs.reduce((s,l)=>s+getBikeKm(l),0);
+  const totSwimM=DATA.logs.reduce((s,l)=>s+getSwimM(l),0);
+  const totSessions = DATA.logs.filter(l=>{const t=normalizeWorkoutType(l.type); return t!=='descanso'&&t!=='mobilidade';}).length;
   const bp=allR.length?Math.min(...allR.map(l=>l.paceNum).filter(p=>p>0)):0;
   document.getElementById('totalKmAll').textContent=totRunKm.toFixed(1);
   document.getElementById('bestPace').textContent=bp?calcPace(1,bp):'--:--';
