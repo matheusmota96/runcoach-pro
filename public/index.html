@@ -232,6 +232,11 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 .btn-secondary { width:100%; padding:12px; background:var(--bg3); border:none; border-radius:12px; color:var(--text2); font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }
 .btn-green { background:linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
 .btn-purple { background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+.btn-danger { background:rgba(239,68,68,0.12); color:var(--red); border:1px solid rgba(239,68,68,0.35); }
+.btn-danger:active { background:rgba(239,68,68,0.18); }
+:root[data-theme="light"] .btn-danger { background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.3); color:var(--red); }
+.history-edit.delete { color:var(--red); border-color:rgba(239,68,68,0.3); }
+.history-edit.delete:hover { border-color:var(--red); }
 
 /* Analysis / Cards */
 .analysis-card { background:var(--bg2); border-radius:var(--radius); padding:20px; border:1px solid var(--bg3); margin-bottom:12px; }
@@ -766,6 +771,7 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
           </div>
           <button class="btn-primary" id="logSubmitBtn" onclick="submitLog()">Salvar Treino</button>
           <button class="btn-secondary" id="logCancelBtn" onclick="cancelEdit()" style="display:none;">Cancelar Edicao</button>
+          <button class="btn-secondary btn-danger" id="logDeleteBtn" onclick="deleteCurrentLog()" style="display:none;">&#128465;&#65039; Excluir Treino</button>
         </div>
       </div>
 
@@ -2166,13 +2172,31 @@ function editLog(id) {
   }
   document.getElementById('logSubmitBtn').textContent='Atualizar Treino';
   document.getElementById('logCancelBtn').style.display='block';
+  document.getElementById('logDeleteBtn').style.display='block';
   selectedFeeling=l.feeling;
   document.querySelectorAll('#feelingOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',b.dataset.value===l.feeling));
   selectedRecovery=[...(l.recovery||[])];
   document.querySelectorAll('#recoveryOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',selectedRecovery.includes(b.dataset.value)));
   switchTab('log',document.querySelectorAll('.nav-item')[2]); switchLogSub('treino');
 }
-function cancelEdit() { editingId=null; document.getElementById('logSubmitBtn').textContent='Salvar Treino'; document.getElementById('logCancelBtn').style.display='none'; resetForm(); }
+function cancelEdit() { editingId=null; document.getElementById('logSubmitBtn').textContent='Salvar Treino'; document.getElementById('logCancelBtn').style.display='none'; document.getElementById('logDeleteBtn').style.display='none'; resetForm(); }
+function deleteLog(id) {
+  const l = DATA.logs.find(x => x.id === id); if (!l) return;
+  const labels = { corrida:'Corrida', bike:'Bike', natacao:'Natacao', musculacao:'Musculacao', academia:'Musculacao', brick:'Brick', mobilidade:'Mobilidade', descanso:'Descanso' };
+  const lbl = labels[l.type] || l.type;
+  let detail = '';
+  if (l.type==='corrida') detail = ` ${l.distance||0}km`;
+  else if (l.type==='bike') detail = ` ${l.distance||0}km`;
+  else if (l.type==='natacao') detail = ` ${l.swimMeters||0}m`;
+  else if (l.type==='brick') detail = ` ${l.brickBikeKm||0}km bike + ${l.brickRunKm||0}km run`;
+  if (!confirm(`Excluir este treino?\n\n${lbl}${detail} - ${l.date}`)) return;
+  DATA.logs = DATA.logs.filter(x => x.id !== id);
+  // If we are editing the same log, cancel edit
+  if (editingId === id) cancelEdit();
+  saveData(); updateUI();
+  showToast('Treino excluido');
+}
+function deleteCurrentLog() { if (editingId != null) deleteLog(editingId); }
 function resetForm() {
   ['logDistance','logTime','logNotes','logPace','logBikeKm','logBikeTime','logBikeSpeed','logSwimM','logSwimTime','logGymTime','brickBikeKm','brickBikeTime','brickRunKm','brickRunTime','brickTransition'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   document.getElementById('logDate').value=todayStr();
@@ -2563,7 +2587,10 @@ function updateUI() {
       else if (item.type==='musculacao'||item.type==='academia') detail = item.muscleGroup?` ${item.muscleGroup}`:'';
       html += `<div class="history-meal-row">
         <span>${tl}${detail}${item.feeling?' - '+item.feeling:''}</span>
-        <button class="history-edit" onclick="editLog(${item.id})" style="position:static;font-size:14px;">&#9998;</button>
+        <span style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="history-edit" onclick="editLog(${item.id})" style="position:static;font-size:14px;" title="Editar">&#9998;</button>
+          <button class="history-edit delete" onclick="deleteLog(${item.id})" style="position:static;font-size:14px;" title="Excluir">&#128465;&#65039;</button>
+        </span>
       </div>`;
     });
 
