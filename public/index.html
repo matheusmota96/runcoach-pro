@@ -77,24 +77,11 @@ body {
   background: var(--accent); color: #ffffff;
 }
 
-/* Brand logo (M·70.3) */
-.brand-logo {
-  display:flex; align-items:center; gap:8px;
-  margin-bottom:14px; user-select:none;
-}
-.brand-logo-mark {
-  width:34px; height:34px; flex-shrink:0;
-}
-.brand-logo-text {
-  font-size:13px; font-weight:900; letter-spacing:2px;
-  color: var(--logo-text); line-height:1;
-}
-.brand-logo-text small {
-  display:block; font-size:9px; font-weight:600; letter-spacing:3px;
-  color: var(--header-text2); margin-top:3px;
-}
-:root[data-theme="dark"] .brand-logo-text { color:#ffffff; }
-:root[data-theme="dark"] .brand-logo-text small { color:rgba(255,255,255,0.65); }
+/* Brand logo (IRONMAN style) */
+.brand-logo { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-bottom:14px; user-select:none; }
+.brand-logo-svg { height:44px; width:auto; max-width:240px; display:block; }
+.brand-tagline { font-size:10px; font-weight:800; letter-spacing:5px; color:var(--header-text2); margin-left:2px; }
+:root[data-theme="dark"] .brand-tagline { color:rgba(255,255,255,0.7); }
 .refresh-btn { background:none; border:none; color:var(--header-text2); font-size:20px; cursor:pointer; padding:6px; border-radius:50%; transition:all 0.3s; }
 .refresh-btn:active { background: rgba(0,0,0,0.1); }
 
@@ -381,8 +368,14 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 :root[data-theme="light"] .stats-row,
 :root[data-theme="light"] .mod-stats { background: var(--border); }
 :root[data-theme="light"] .phase-bar { background:var(--surface); border-bottom-color:var(--border); }
-:root[data-theme="light"] .phase-pill { background:var(--bg2); color:var(--text2); }
-:root[data-theme="light"] .phase-pill.active { color:#ffffff; }
+:root[data-theme="light"] .phase-pill { background:#eef0f5; color:#4a5568; border:1px solid var(--border); }
+:root[data-theme="light"] .phase-pill.active {
+  background:linear-gradient(135deg, #d8001a 0%, #ff1f33 100%) !important;
+  color:#ffffff !important;
+  border-color:#d8001a;
+  box-shadow:0 4px 14px rgba(216,0,26,0.35);
+}
+:root[data-theme="light"] .phase-pill.done { background:rgba(22,163,74,0.12); color:#15803d; border-color:rgba(22,163,74,0.25); }
 :root[data-theme="light"] .day-badge.easy { background:rgba(22,163,74,0.12); color:var(--green); }
 :root[data-theme="light"] .day-badge.moderate { background:rgba(217,119,6,0.12); color:var(--yellow); }
 :root[data-theme="light"] .day-badge.hard { background:rgba(220,38,38,0.12); color:var(--red); }
@@ -541,13 +534,15 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
   <!-- HEADER -->
   <div class="header">
     <div class="brand-logo">
-      <svg class="brand-logo-mark" viewBox="0 0 60 60" aria-hidden="true">
-        <circle cx="30" cy="11" r="7" fill="var(--logo-mark)"/>
-        <path d="M14 50 L14 26 Q14 22 18 22 L26 22 Q30 22 30 26 L30 50 M30 26 Q30 22 34 22 L42 22 Q46 22 46 26 L46 50" stroke="var(--logo-mark)" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="brand-logo-svg" viewBox="0 0 420 110" xmlns="http://www.w3.org/2000/svg" aria-label="IRONMAN 70.3">
+        <g font-family="'Arial Black', 'Helvetica Neue', Impact, system-ui, sans-serif" font-weight="900" font-size="100" letter-spacing="-5">
+          <text x="0" y="92" fill="var(--logo-text)">IRO</text>
+          <text x="270" y="92" fill="var(--logo-text)">AN</text>
+        </g>
+        <circle cx="215" cy="22" r="20" fill="#e30a1f"/>
+        <path d="M170 38 H198 L215 70 L232 38 H260 V96 H170 Z" fill="#e30a1f"/>
       </svg>
-      <div class="brand-logo-text">
-        MOTA<small>70.3 COACH</small>
-      </div>
+      <div class="brand-tagline">70.3 COACH</div>
     </div>
     <div class="header-top">
       <div>
