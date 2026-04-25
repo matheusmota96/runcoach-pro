@@ -5,18 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#050914">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>RunCoach Pro - Mota</title>
+<title>Mota 70.3 Coach</title>
 <style>
 :root {
-  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
-  --accent: #f97316; --accent2: #fb923c;
-  --green: #22c55e; --red: #ef4444; --yellow: #eab308;
+  --bg: #050914; --bg2: #0d1424; --bg3: #1c2438;
+  --accent: #e30a1f; --accent2: #ff2a3d;
+  --orange: #ff6b1a; --orange2: #ffa64d;
+  --green: #22c55e; --red: #ef4444; --yellow: #fbbf24;
   --blue: #3b82f6; --cyan: #06b6d4; --purple: #a855f7;
-  --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+  --swim: #00b8d4; --bike: #ff6b1a; --run: #e30a1f; --gym: #a855f7; --brick: #fbbf24;
+  --text: #ffffff; --text2: #a0aec0; --text3: #6b7388;
   --radius: 16px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -29,12 +31,19 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #e30a1f 0%, #8a0512 60%, #050914 100%);
   padding: 24px 20px 20px; position: relative; overflow: hidden;
 }
 .header::after {
-  content:''; position:absolute; top:-50%; right:-30%;
-  width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%;
+  content:''; position:absolute; top:-60%; right:-30%;
+  width:240px; height:240px;
+  background:radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  border-radius:50%;
+}
+.header::before {
+  content:'M·70.3'; position:absolute; bottom:-8px; right:14px;
+  font-size:46px; font-weight:900; letter-spacing:-1px;
+  color:rgba(255,255,255,0.06); pointer-events:none;
 }
 .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .header-greeting { font-size:14px; opacity:0.85; }
@@ -136,9 +145,11 @@ body {
 .day-row:hover,.day-row.active { border-color:var(--accent); }
 .day-row.today { border-color:var(--accent); background:linear-gradient(135deg, var(--bg2) 0%, #1a2744 100%); }
 .day-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.day-dot.run { background:var(--accent); } .day-dot.gym { background:var(--blue); }
+.day-dot.run { background:var(--run); } .day-dot.gym { background:var(--gym); }
 .day-dot.rest { background:var(--bg3); } .day-dot.long { background:var(--green); }
-.day-dot.tennis { background:var(--yellow); }
+.day-dot.tennis { background:var(--yellow); } .day-dot.swim { background:var(--swim); }
+.day-dot.bike { background:var(--bike); } .day-dot.brick { background:var(--brick); }
+.day-dot.mobility { background:var(--cyan); }
 .day-name { font-size:13px; font-weight:700; width:40px; flex-shrink:0; }
 .day-workout { font-size:13px; color:var(--text2); flex:1; }
 .day-badge { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; flex-shrink:0; }
@@ -334,6 +345,65 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 .history-meal-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-bottom:1px solid var(--bg3); }
 .history-meal-row:last-child { border-bottom:none; }
 
+/* Phase Pill */
+.phase-bar { display:flex; gap:6px; background:var(--bg2); padding:14px 16px; border-bottom:1px solid var(--bg3); overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.phase-bar::-webkit-scrollbar { display:none; }
+.phase-pill { flex-shrink:0; padding:6px 12px; border-radius:18px; font-size:11px; font-weight:700; background:var(--bg3); color:var(--text3); white-space:nowrap; }
+.phase-pill.active { background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; box-shadow:0 0 12px rgba(227,10,31,0.4); }
+.phase-pill.done { background:rgba(34,197,94,0.15); color:var(--green); }
+
+/* Race Card */
+.race-hero {
+  background:linear-gradient(135deg, #e30a1f 0%, #1a0510 100%);
+  border-radius:var(--radius); padding:20px; position:relative; overflow:hidden;
+  border:1px solid rgba(227,10,31,0.4); margin-bottom:14px;
+}
+.race-hero::before {
+  content:'70.3'; position:absolute; right:-10px; bottom:-30px;
+  font-size:120px; font-weight:900; color:rgba(255,255,255,0.05); letter-spacing:-4px;
+}
+.race-hero-tag { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,0.7); font-weight:700; }
+.race-hero-title { font-size:22px; font-weight:900; margin:6px 0 4px; }
+.race-hero-date { font-size:13px; color:rgba(255,255,255,0.7); }
+.race-hero-distances { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; position:relative; z-index:1; }
+.race-distance { background:rgba(0,0,0,0.35); padding:8px 12px; border-radius:10px; font-size:12px; backdrop-filter:blur(4px); }
+.race-distance strong { color:#fff; font-weight:800; }
+.race-card {
+  background:var(--bg2); border-radius:12px; padding:14px 16px; margin-bottom:8px;
+  border:1px solid var(--bg3); display:flex; gap:12px; align-items:center;
+}
+.race-card.done { border-color:rgba(34,197,94,0.3); background:linear-gradient(135deg, var(--bg2), #0f1f1a); }
+.race-card.planned { border-left:3px solid var(--accent); }
+.race-card-icon { font-size:22px; width:36px; text-align:center; flex-shrink:0; }
+.race-card-info { flex:1; min-width:0; }
+.race-card-name { font-size:14px; font-weight:700; }
+.race-card-meta { font-size:11px; color:var(--text3); margin-top:3px; }
+.race-card-result { font-size:13px; font-weight:800; color:var(--accent); }
+.race-card-status { font-size:10px; padding:3px 8px; border-radius:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.race-card-status.done { background:rgba(34,197,94,0.15); color:var(--green); }
+.race-card-status.planned { background:rgba(227,10,31,0.15); color:var(--accent); }
+
+/* Modality chip */
+.mod-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:14px; font-size:11px; font-weight:700; }
+.mod-chip.run { background:rgba(227,10,31,0.15); color:var(--run); }
+.mod-chip.bike { background:rgba(255,107,26,0.15); color:var(--bike); }
+.mod-chip.swim { background:rgba(0,184,212,0.15); color:var(--swim); }
+.mod-chip.gym { background:rgba(168,85,247,0.15); color:var(--gym); }
+.mod-chip.brick { background:rgba(251,191,36,0.15); color:var(--brick); }
+.mod-chip.mobility { background:rgba(6,182,212,0.15); color:var(--cyan); }
+.mod-chip.rest { background:var(--bg3); color:var(--text3); }
+
+/* Modality 4-stat row */
+.mod-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--bg3); }
+.mod-stat { background:var(--bg2); padding:14px 8px; text-align:center; }
+.mod-stat-icon { font-size:16px; margin-bottom:4px; }
+.mod-stat-value { font-size:18px; font-weight:800; }
+.mod-stat-label { font-size:10px; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
+.mod-stat .mod-stat-value.run { color:var(--run); }
+.mod-stat .mod-stat-value.bike { color:var(--bike); }
+.mod-stat .mod-stat-value.swim { color:var(--swim); }
+.mod-stat .mod-stat-value.gym { color:var(--gym); }
+
 /* Coach Tips */
 .coach-tip {
   background:linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(6,182,212,0.06) 100%);
@@ -396,21 +466,30 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         <circle class="ring-bg" cx="28" cy="28" r="24" fill="none" stroke-width="4"/>
         <circle class="ring-fill" id="countdownRing" cx="28" cy="28" r="24" fill="none" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="0"/>
       </svg>
-      <div class="countdown-number" id="daysLeft">24</div>
+      <div class="countdown-number" id="daysLeft">365</div>
     </div>
     <div class="countdown-info">
-      <div class="countdown-label">Dias para a Meia Maratona</div>
-      <div class="countdown-detail">19 de Abril de 2026</div>
+      <div class="countdown-label">Ironman 70.3 Brasilia</div>
+      <div class="countdown-detail" id="countdownDetail">18 de Abril de 2027</div>
       <div class="countdown-sub" id="countdownSub"></div>
     </div>
   </div>
 
+  <!-- PHASE STRIP -->
+  <div class="phase-bar" id="phaseBar"></div>
+
   <!-- ==================== TAB: HOME ==================== -->
   <div class="tab-content active" id="tab-home">
     <div class="week-goal" id="weekGoalSection"></div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="mod-stat-icon">&#127939;</div><div class="mod-stat-value run" id="weekRunKm">0</div><div class="mod-stat-label">Km Run</div></div>
+      <div class="mod-stat"><div class="mod-stat-icon">&#128692;</div><div class="mod-stat-value bike" id="weekBikeKm">0</div><div class="mod-stat-label">Km Bike</div></div>
+      <div class="mod-stat"><div class="mod-stat-icon">&#127946;</div><div class="mod-stat-value swim" id="weekSwimM">0</div><div class="mod-stat-label">M Swim</div></div>
+      <div class="mod-stat"><div class="mod-stat-icon">&#128170;</div><div class="mod-stat-value gym" id="weekGymN">0</div><div class="mod-stat-label">Forca</div></div>
+    </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-value accent" id="weekKm">6.2</div><div class="stat-label">Km Feitos</div></div>
-      <div class="stat-card"><div class="stat-value green" id="avgPace">6:00</div><div class="stat-label">Pace Medio</div></div>
+      <div class="stat-card"><div class="stat-value accent" id="weekKm">0</div><div class="stat-label">Carga Sem.</div></div>
+      <div class="stat-card"><div class="stat-value green" id="avgPace">--:--</div><div class="stat-label">Pace Run</div></div>
       <div class="stat-card"><div class="stat-value purple" id="dayProtein">0g</div><div class="stat-label">Proteina Hoje</div></div>
     </div>
     <div class="section">
@@ -492,8 +571,16 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
       <div id="logSubTreino">
         <div class="log-form" id="logForm">
           <div class="form-row"><div class="form-label">Data</div><input class="form-input" type="date" id="logDate"></div>
-          <div class="form-row"><div class="form-label">Tipo de Treino</div>
-            <select class="form-input" id="logType"><option value="corrida">Corrida</option><option value="academia">Academia</option><option value="tenis">Tenis</option><option value="descanso">Descanso Ativo</option></select>
+          <div class="form-row"><div class="form-label">Modalidade</div>
+            <select class="form-input" id="logType">
+              <option value="corrida">&#127939; Corrida</option>
+              <option value="bike">&#128692; Bike</option>
+              <option value="natacao">&#127946; Natacao</option>
+              <option value="musculacao">&#128170; Musculacao</option>
+              <option value="brick">&#128293; Brick (Bike+Run)</option>
+              <option value="mobilidade">&#129336; Mobilidade</option>
+              <option value="descanso">&#128164; Descanso Ativo</option>
+            </select>
           </div>
           <div id="runFields">
             <div class="form-grid">
@@ -501,6 +588,67 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
               <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="0.1" placeholder="37.4" id="logTime"></div>
             </div>
             <div class="form-row"><div class="form-label">Pace (auto)</div><input class="form-input" type="text" id="logPace" placeholder="Calculado auto" readonly></div>
+          </div>
+          <div id="bikeFields" style="display:none;">
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Distancia (km)</div><input class="form-input" type="number" step="0.1" placeholder="40" id="logBikeKm"></div>
+              <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="0.1" placeholder="90" id="logBikeTime"></div>
+            </div>
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Local</div>
+                <select class="form-input" id="logBikeType">
+                  <option value="rolo">Rolo (casa)</option>
+                  <option value="rua">Rua / Estrada</option>
+                  <option value="academia">Academia</option>
+                </select>
+              </div>
+              <div class="form-row"><div class="form-label">Vel media (km/h)</div><input class="form-input" type="text" id="logBikeSpeed" placeholder="Calculado" readonly></div>
+            </div>
+          </div>
+          <div id="swimFields" style="display:none;">
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Distancia (m)</div><input class="form-input" type="number" step="50" placeholder="1000" id="logSwimM"></div>
+              <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="0.5" placeholder="30" id="logSwimTime"></div>
+            </div>
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Piscina</div>
+                <select class="form-input" id="logSwimPool">
+                  <option value="25">25m</option>
+                  <option value="50">50m</option>
+                </select>
+              </div>
+              <div class="form-row"><div class="form-label">Foco</div>
+                <select class="form-input" id="logSwimFocus">
+                  <option value="tecnica">Tecnica</option>
+                  <option value="resistencia">Resistencia</option>
+                  <option value="continuo">Continuo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="brickFields" style="display:none;">
+            <div class="form-label" style="margin-bottom:8px;">&#128692; Bike</div>
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Km</div><input class="form-input" type="number" step="0.1" id="brickBikeKm" placeholder="30"></div>
+              <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="0.1" id="brickBikeTime" placeholder="60"></div>
+            </div>
+            <div class="form-label" style="margin-bottom:8px;">&#127939; Corrida</div>
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">Km</div><input class="form-input" type="number" step="0.1" id="brickRunKm" placeholder="5"></div>
+              <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="0.1" id="brickRunTime" placeholder="30"></div>
+            </div>
+            <div class="form-row"><div class="form-label">Sensacao da transicao</div><input class="form-input" type="text" id="brickTransition" placeholder="Ex: perna pesada nos primeiros 1km"></div>
+          </div>
+          <div id="gymFields" style="display:none;">
+            <div class="form-row"><div class="form-label">Grupo muscular</div>
+              <select class="form-input" id="logMuscleGroup">
+                <option value="upper">Superior / Costas / Peito</option>
+                <option value="lower">Inferior / Perna</option>
+                <option value="core">Core / Abdomen</option>
+                <option value="full">Full body</option>
+              </select>
+            </div>
+            <div class="form-row"><div class="form-label">Tempo (min)</div><input class="form-input" type="number" step="1" id="logGymTime" placeholder="60"></div>
           </div>
           <div class="form-row"><div class="form-label">Como se sentiu?</div>
             <div class="feeling-options" id="feelingOptions">
@@ -656,12 +804,14 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
         <button class="sub-tab" onclick="switchProgressSub('nutri')">&#127860; Nutricao</button>
       </div>
       <div id="progressSubTreino">
-        <div class="chart-container"><div style="font-size:14px;font-weight:700;">Pace por Treino</div><canvas class="chart-canvas" id="paceChart"></canvas></div>
+        <div class="chart-container"><div style="font-size:14px;font-weight:700;">Pace por Treino (Corrida)</div><canvas class="chart-canvas" id="paceChart"></canvas></div>
         <div class="week-summary">
-          <div class="summary-card"><div class="summary-value accent" id="totalKmAll">6.2</div><div class="summary-label">Km Total</div></div>
-          <div class="summary-card"><div class="summary-value green" id="bestPace">6:00</div><div class="summary-label">Melhor Pace</div></div>
-          <div class="summary-card"><div class="summary-value blue" id="totalSessions">1</div><div class="summary-label">Total Treinos</div></div>
-          <div class="summary-card"><div class="summary-value" style="color:var(--cyan)" id="avgWeekKm">6.2</div><div class="summary-label">Media Km/Sem</div></div>
+          <div class="summary-card"><div class="summary-value" style="color:var(--run)" id="totalKmAll">0</div><div class="summary-label">Km Run Total</div></div>
+          <div class="summary-card"><div class="summary-value" style="color:var(--bike)" id="totalBikeKm">0</div><div class="summary-label">Km Bike Total</div></div>
+          <div class="summary-card"><div class="summary-value" style="color:var(--swim)" id="totalSwimM">0</div><div class="summary-label">Metros Natacao</div></div>
+          <div class="summary-card"><div class="summary-value green" id="bestPace">--:--</div><div class="summary-label">Melhor Pace</div></div>
+          <div class="summary-card"><div class="summary-value blue" id="totalSessions">0</div><div class="summary-label">Total Treinos</div></div>
+          <div class="summary-card"><div class="summary-value" style="color:var(--cyan)" id="avgWeekKm">0</div><div class="summary-label">Media Run/Sem</div></div>
         </div>
       </div>
       <div id="progressSubNutri" style="display:none;">
@@ -679,6 +829,68 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
       <div class="cal-strip" id="progressCalStrip"></div>
     </div>
     <div class="section" style="padding-top:0;"><div class="section-title"><span>&#128218;</span> HISTORICO</div><div id="historyList"></div></div>
+  </div>
+
+  <!-- ==================== TAB: RACES ==================== -->
+  <div class="tab-content" id="tab-races">
+    <div class="section">
+      <div class="section-title"><span>&#127942;</span> PROVA PRINCIPAL</div>
+      <div class="race-hero">
+        <div class="race-hero-tag">Plano Ativo</div>
+        <div class="race-hero-title">Ironman 70.3 Brasilia</div>
+        <div class="race-hero-date" id="ironmanCountdownText">Abril de 2027</div>
+        <div class="race-hero-distances">
+          <div class="race-distance">&#127946; <strong>1.9km</strong> Natacao</div>
+          <div class="race-distance">&#128692; <strong>90km</strong> Bike</div>
+          <div class="race-distance">&#127939; <strong>21.1km</strong> Corrida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="section-title"><span>&#127919;</span> MARCOS DO PLANO</div>
+      <div id="milestonesList"></div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="section-title"><span>&#10133;</span> CADASTRAR PROVA</div>
+      <div class="log-form">
+        <div class="form-row"><div class="form-label">Nome da prova</div><input class="form-input" type="text" id="raceName" placeholder="Ex: Corrida do Lago"></div>
+        <div class="form-grid">
+          <div class="form-row"><div class="form-label">Tipo</div>
+            <select class="form-input" id="raceType">
+              <option value="meia_maratona">Meia maratona (21k)</option>
+              <option value="corrida_5k">Corrida 5k</option>
+              <option value="corrida_10k">Corrida 10k</option>
+              <option value="tri_sprint">Triathlon Sprint</option>
+              <option value="tri_olimpico">Triathlon Olimpico</option>
+              <option value="simulado">Simulado</option>
+              <option value="ironman_70_3">Ironman 70.3</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-row"><div class="form-label">Data</div><input class="form-input" type="date" id="raceDate"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row"><div class="form-label">Distancia (km)</div><input class="form-input" type="number" step="0.1" id="raceDistance" placeholder="21.1"></div>
+          <div class="form-row"><div class="form-label">Status</div>
+            <select class="form-input" id="raceStatus">
+              <option value="planejada">Planejada</option>
+              <option value="concluida">Concluida</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row"><div class="form-label">Objetivo / Tempo (concluida)</div><input class="form-input" type="text" id="raceGoal" placeholder="Ex: concluir / 2h10min"></div>
+        <div class="form-row"><div class="form-label">Observacoes</div><textarea class="form-input" id="raceNotes" placeholder="Anotacoes da prova..."></textarea></div>
+        <button class="btn-primary" id="raceSubmitBtn" onclick="submitRace()">Salvar Prova</button>
+        <button class="btn-secondary" id="raceCancelBtn" onclick="cancelRaceEdit()" style="display:none;">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top:0;">
+      <div class="section-title"><span>&#128202;</span> HISTORICO DE PROVAS</div>
+      <div id="racesList"></div>
+    </div>
   </div>
 
   <!-- ==================== TAB: SETTINGS ==================== -->
@@ -701,7 +913,9 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">TMB</span><span style="font-weight:700;">~1687 kcal</span></div>
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Meta Peso</span><span style="font-weight:700;color:var(--accent);">82kg / 13-14% BF</span></div>
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Meta Proteina</span><span style="font-weight:700;color:var(--purple);">140g/dia</span></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Prova</span><span style="font-weight:700;color:var(--green);">21K - 19/04</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Plano Ativo</span><span style="font-weight:700;color:var(--accent);">Ironman 70.3 Brasilia</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Data da Prova</span><span style="font-weight:700;color:var(--accent);">18/04/2027</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Plano Anterior</span><span style="font-weight:700;color:var(--green);">LiveRun 21k - concluida</span></div>
         </div>
       </div>
     </div>
@@ -712,11 +926,12 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
     </div>
   </div>
 
-  <!-- Bottom Nav (5 tabs) -->
+  <!-- Bottom Nav (6 tabs) -->
   <div class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('home',this)"><div class="nav-icon">&#127968;</div><div class="nav-label">Inicio</div></button>
-    <button class="nav-item" onclick="switchTab('nutri',this)"><div class="nav-icon">&#127860;</div><div class="nav-label">Nutricao</div></button>
+    <button class="nav-item" onclick="switchTab('races',this)"><div class="nav-icon">&#127942;</div><div class="nav-label">Provas</div></button>
     <button class="nav-item" onclick="switchTab('log',this)"><div class="nav-icon">&#10133;</div><div class="nav-label">Registrar</div></button>
+    <button class="nav-item" onclick="switchTab('nutri',this)"><div class="nav-icon">&#127860;</div><div class="nav-label">Nutricao</div></button>
     <button class="nav-item" onclick="switchTab('progress',this)"><div class="nav-icon">&#128200;</div><div class="nav-label">Evolucao</div></button>
     <button class="nav-item" onclick="switchTab('settings',this)"><div class="nav-icon">&#9881;&#65039;</div><div class="nav-label">Config</div></button>
   </div>
@@ -735,22 +950,60 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 
 <script>
 // ===== CONFIG =====
-const RACE_DATE = new Date('2026-04-19');
-const PLAN_START = new Date('2026-03-26');
+// Active plan: Ironman 70.3 Brasilia - Abril 2027
+const RACE_DATE = new Date('2027-04-18T00:00:00');
+const PLAN_START = new Date('2026-04-25T00:00:00');
+// Legacy plan: Meia Maratona LiveRun (concluida)
+const HALF_RACE_DATE = new Date('2026-04-19T00:00:00');
+const HALF_PLAN_START = new Date('2026-03-26T00:00:00');
 const PROTEIN_GOAL = 140;
 const CAL_GOAL = 2400;
 const CARB_GOAL = 280;
 
+// ===== PLAN PHASES (12 meses para Ironman 70.3) =====
+const PHASES = [
+  { idx:1, name:'Base e Adaptacao', short:'Base', startWeek:1, endWeek:12,
+    desc:'Aprender natacao, adaptar bike, manter corrida. Treino leve e consistente.', color:'cyan' },
+  { idx:2, name:'Consistencia', short:'Consistencia', startWeek:13, endWeek:24,
+    desc:'Aumentar frequencia, evoluir bike, nadar com seguranca, bricks leves.', color:'blue' },
+  { idx:3, name:'Construcao Especifica', short:'Construcao', startWeek:25, endWeek:36,
+    desc:'Treinos longos de bike, corrida pos-bike, natacao continua, simulacoes parciais.', color:'orange' },
+  { idx:4, name:'Pico', short:'Pico', startWeek:37, endWeek:46,
+    desc:'Treinos parecidos com prova, longos maiores, nutricao, bricks fortes.', color:'accent' },
+  { idx:5, name:'Taper', short:'Taper', startWeek:47, endWeek:51,
+    desc:'Reduzir volume, manter ritmo, chegar descansado.', color:'green' },
+  { idx:6, name:'Semana da Prova', short:'Prova', startWeek:52, endWeek:53,
+    desc:'Foco total - 70.3 Brasilia.', color:'accent' }
+];
+
+function getPhase(weekNum) {
+  return PHASES.find(p => weekNum >= p.startWeek && weekNum <= p.endWeek) || PHASES[PHASES.length-1];
+}
+
+// Per-phase weekly volume targets (Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6)
+const PHASE_VOLUMES = {
+  1: { swim:[0,800,0,0,1000,0,0], bike:[0,0,0,0,0,20,30], run:[10,0,5,0,5,0,0] },
+  2: { swim:[0,1200,0,0,1500,0,0], bike:[0,0,15,0,0,25,45], run:[14,0,7,0,6,0,0] },
+  3: { swim:[0,1500,0,0,1800,0,0], bike:[0,0,20,0,0,30,60], run:[18,0,8,0,6,0,0] },
+  4: { swim:[0,2000,0,0,2000,0,0], bike:[0,0,25,0,0,35,80], run:[21,0,10,0,6,0,0] },
+  5: { swim:[0,1000,0,0,800,0,0], bike:[0,0,0,0,0,20,40], run:[10,0,5,0,3,0,0] },
+  6: { swim:[0,500,0,0,0,0,0], bike:[0,0,0,0,0,0,0], run:[0,0,3,0,0,0,0] }
+};
+
 // ===== GLOSSARY =====
 const GLOSSARY = {
-  'strides': { title:'&#127939; Strides', text:'Sprints curtos de 80-100m em velocidade alta (nao maxima). Acelere progressivamente, mantenha por alguns segundos e desacelere. 4-6 repeticoes com 60s de descanso. Melhora cadencia e economia de corrida.' },
-  'pace alvo': { title:'&#127919; Pace Alvo', text:'O pace que voce pretende manter na meia: 5:30/km = ~1h55min na prova.' },
-  'longao': { title:'&#128165; Longao', text:'Treino mais longo da semana. Constroi resistencia aerobica. Pace confortavel, mais lento que alvo. Hidrate a cada 5km.' },
-  'easy pace': { title:'&#128154; Easy Pace', text:'Ritmo onde voce conversa normalmente. 30-60s mais lento que o alvo. Para voce: 5:50-6:20/km.' },
-  'progressivo': { title:'&#128200; Progressiva', text:'Comeca easy e vai acelerando. Ex: 5:50 > 5:35 > 5:20. Simula segunda metade da prova.' },
-  'taper': { title:'&#128164; Taper', text:'Reducao de volume 1-2 semanas antes da prova. Mantem intensidade, reduz distancia. Chegar descansado.' },
+  'strides': { title:'&#127939; Strides', text:'Sprints curtos de 80-100m em velocidade alta (nao maxima). Acelere progressivamente, mantenha por alguns segundos e desacelere. 4-6 repeticoes com 60s de descanso.' },
+  'pace alvo': { title:'&#127919; Pace Alvo', text:'O pace que voce pretende manter na corrida do 70.3 (21k pos-bike).' },
+  'longao': { title:'&#128165; Longao', text:'Treino mais longo da semana. Constroi resistencia aerobica. Pace confortavel.' },
+  'easy pace': { title:'&#128154; Easy Pace', text:'Ritmo onde voce conversa normalmente. Para voce: 5:50-6:20/km.' },
+  'progressivo': { title:'&#128200; Progressiva', text:'Comeca easy e vai acelerando. Simula segunda metade da prova.' },
+  'taper': { title:'&#128164; Taper', text:'Reducao de volume 1-2 semanas antes da prova. Mantem intensidade.' },
   'descanso ativo': { title:'&#129336; Descanso Ativo', text:'Recuperacao com atividade leve: caminhada, alongamento, banheira de gelo.' },
-  'shakeout': { title:'&#129406; Shakeout', text:'Corrida curta (3-4km) 1-2 dias antes da prova. Solta as pernas sem cansar.' }
+  'shakeout': { title:'&#129406; Shakeout', text:'Corrida curta (3-4km) 1-2 dias antes da prova.' },
+  'natacao_tecnica': { title:'&#127946; Natacao Tecnica', text:'Foco em respiracao bilateral, posicao do corpo, batida de perna eficiente. Tecnica antes de velocidade. Drills (deslize, catch-up, fingertip).' },
+  'bike_z2': { title:'&#128692; Bike Zona 2', text:'Pedalada confortavel, conversando. Constroi base aerobica. 60-70% FCmax. Cadencia 80-90 rpm.' },
+  'brick': { title:'&#128293; Brick Training', text:'Treino combinado: bike + corrida sem pausa. Ensina a perna a correr depois da bike. Crucial para o 70.3.' },
+  'transicao': { title:'&#128640; Transicoes (T1/T2)', text:'T1 = saida do nado para bike. T2 = bike para corrida. Pratique trocas rapidas: tenis, bone, oculos.' }
 };
 
 // ===== CONTEXTUAL COACH TIPS ENGINE =====
@@ -778,69 +1031,45 @@ function getDayContext() {
 function getCoachTips() {
   const ctx = getDayContext();
   const tips = [];
+  const t = ctx.todayPlan && ctx.todayPlan.type;
 
-  // PRIORITY 1: Tomorrow is longão — prep tips
+  // Phase-based universal triathlon tip (always shown)
+  const wn = getWeekNumber(new Date());
+  const phase = getPhase(wn);
+  if (phase.idx === 1) {
+    tips.push({ color:'cyan', tag:'Fase 1', tagColor:'cyan', title:'Base e adaptacao', text:'Tecnica vem antes de velocidade. Sua corrida ja e forte - agora o jogo e construir bike e natacao.', detailKey:'tri_base' });
+  } else if (phase.idx === 2) {
+    tips.push({ color:'blue', tag:'Fase 2', tagColor:'blue', title:'Consistencia bate talento', text:'Bike no rolo conta. Frequencia maior, intensidade controlada. Comece bricks leves.', detailKey:'tri_consistencia' });
+  } else if (phase.idx === 3) {
+    tips.push({ color:'yellow', tag:'Fase 3', tagColor:'yellow', title:'Construcao especifica', text:'Bricks ensinam sua perna a correr depois da bike. Treine nutricao nos longos.', detailKey:'tri_construcao' });
+  } else if (phase.idx === 4) {
+    tips.push({ color:'cyan', tag:'Fase 4', tagColor:'cyan', title:'Pico de forma', text:'Treinos parecidos com a prova. Confianca vem do treino bem feito.', detailKey:'tri_pico' });
+  } else if (phase.idx === 5) {
+    tips.push({ color:'green', tag:'Taper', tagColor:'green', title:'Reduzir para chegar afiado', text:'Volume baixo, intensidade media. Descanse - e treino tambem.', detailKey:'tri_taper' });
+  } else if (phase.idx === 6) {
+    tips.push({ color:'green', tag:'Semana da Prova', tagColor:'green', title:'70.3 Brasilia - foco total!', text:'Volume minimo, hidratacao alta. Nada novo no dia da prova.', detailKey:'semana_prova' });
+  }
+
+  // Day-specific
+  if (t === 'swim') {
+    tips.push({ color:'cyan', tag:'Natacao', tagColor:'cyan', title:'Tecnica antes de velocidade', text:'Foque respiracao bilateral e posicao do corpo. 25m bem feitos > 100m mal feitos.', detailKey:'natacao_dicas' });
+  } else if (t === 'bike') {
+    tips.push({ color:'yellow', tag:'Bike', tagColor:'yellow', title:'Bike longa: consistencia', text:'Cadencia 80-90 rpm. Hidrate a cada 20min. Coma a cada 45-60min.', detailKey:'bike_dicas' });
+  } else if (t === 'brick') {
+    tips.push({ color:'yellow', tag:'Brick', tagColor:'yellow', title:'Brick: pernas pesadas no inicio', text:'Os primeiros 1-2km de corrida pos-bike sao duros. Cadencia rapida e curta para soltar.', detailKey:'brick_dicas' });
+  } else if (t === 'long') {
+    tips.push({ color:'green', tag:'Longao', tagColor:'green', title:'Hoje e dia de longao', text:'Entre leve, hidratado. Eletrolitos antes/durante/apos.', detailKey:'dia_longao' });
+  } else if (t === 'gym') {
+    tips.push({ color:'blue', tag:'Forca', tagColor:'blue', title:'Forca controlada', text:'Foco em controle e qualidade. Sem exaustao. Forca sustenta o triathleta.', detailKey:'forca_dicas' });
+  }
+
+  // Tomorrow longão / brick prep
   if (ctx.isTomorrowLongao) {
-    tips.push({
-      color: 'yellow', tag: 'Preparacao', tagColor: 'yellow',
-      title: 'Amanha e dia de longao!',
-      text: 'Hoje o foco e carboidrato, hidratacao, eletrolitos e sono.',
-      detailKey: 'pre_longao'
-    });
+    tips.push({ color:'yellow', tag:'Amanha', tagColor:'yellow', title:'Amanha e dia de longao', text:'Carbo + hidratacao + eletrolitos + sono. Prepare a roupa hoje.', detailKey:'pre_longao' });
   }
-
-  // PRIORITY 1: Today IS longão
-  if (ctx.isLongao) {
-    tips.push({
-      color: 'green', tag: 'Longao', tagColor: 'green',
-      title: 'Hoje e dia de longao!',
-      text: 'Entre leve, hidratado e com energia. Protocolo completo de eletrolitos ativado.',
-      detailKey: 'dia_longao'
-    });
-  }
-
-  // Post-longão recovery
   if (ctx.wasYesterdayLongao) {
-    tips.push({
-      color: 'cyan', tag: 'Recuperacao', tagColor: 'cyan',
-      title: 'Recuperacao ativa hoje',
-      text: 'Ontem foi longao. Mantenha proteina alta, hidrate bastante e descanse.',
-      detailKey: 'pos_longao'
-    });
+    tips.push({ color:'cyan', tag:'Recuperacao', tagColor:'cyan', title:'Recuperacao ativa', text:'Proteina alta, hidrate bem, alongamento leve.', detailKey:'pos_longao' });
   }
-
-  // Normal training day (not longão)
-  if (ctx.isTrainingDay && !ctx.isLongao) {
-    tips.push({
-      color: 'blue', tag: 'Treino', tagColor: 'blue',
-      title: 'Dia de treino: cuide da hidratacao',
-      text: ctx.isHardTraining
-        ? 'Treino intenso hoje. Eletrolitos antes e depois. Hidrate com 3L+ de agua.'
-        : 'Treino leve hoje. 1 sache de eletrolitos ao longo do dia e boa hidratacao.',
-      detailKey: 'dia_treino'
-    });
-  }
-
-  // Rest day tip
-  if (ctx.isRestDay && !ctx.wasYesterdayLongao && !ctx.isTomorrowLongao) {
-    tips.push({
-      color: 'cyan', tag: 'Descanso', tagColor: 'cyan',
-      title: 'Dia de descanso ativo',
-      text: 'Aproveite para hidratar bem, manter proteina alta e alongar.',
-      detailKey: 'dia_descanso'
-    });
-  }
-
-  // Race week special tip
-  if (ctx.dl <= 7 && ctx.dl > 0) {
-    tips.push({
-      color: 'green', tag: 'Semana da Prova', tagColor: 'green',
-      title: 'Taper final — foco total!',
-      text: 'Volume baixo, hidratacao alta, carboidrato alto nos ultimos 3 dias. Nada novo no dia da prova.',
-      detailKey: 'semana_prova'
-    });
-  }
-
   return tips;
 }
 
@@ -969,6 +1198,104 @@ const COACH_DETAILS = {
 • 1 sache Behyve + 500ml agua antes<br>
 • Gel preparado para km 10-12<br>
 • Confie no treino!`
+  },
+  tri_base: {
+    title: '🌱 Fase 1 - Base e Adaptacao',
+    text: `<strong>Objetivos (3 meses)</strong><br>
+• Aprender natacao no seu ritmo<br>
+• Adaptar bike (rolo + ruas curtas)<br>
+• Manter corrida sem aumentar volume<br>
+• Treinar leve e construir habito<br><br>
+<strong>Foco</strong><br>
+• Tecnica de natacao com drills<br>
+• Bike confortavel ate 1h<br>
+• Forca controlada para sustentar carga futura`
+  },
+  tri_consistencia: {
+    title: '📈 Fase 2 - Consistencia',
+    text: `<strong>Objetivos (3 meses)</strong><br>
+• Aumentar frequencia (5-6x/sem)<br>
+• Bike mais longa e mais frequente<br>
+• Natacao com mais seguranca<br>
+• Comecar bricks leves`
+  },
+  tri_construcao: {
+    title: '🔧 Fase 3 - Construcao Especifica',
+    text: `<strong>Objetivos (3 meses)</strong><br>
+• Bike longa 2h+<br>
+• Corrida pos-bike (brick)<br>
+• Natacao continua 1500m+<br>
+• Simulacoes parciais<br>
+• Testar nutricao de prova`
+  },
+  tri_pico: {
+    title: '🏔️ Fase 4 - Pico',
+    text: `<strong>Objetivos (~2.5 meses)</strong><br>
+• Treinos parecidos com prova<br>
+• Longos maiores (bike 3h, run 18-21k)<br>
+• Estrategia completa de nutricao<br>
+• Bricks fortes e mais longos`
+  },
+  tri_taper: {
+    title: '😴 Fase 5 - Taper',
+    text: `<strong>Objetivos (5 sem)</strong><br>
+• Reduzir volume gradualmente<br>
+• Manter intensidade media<br>
+• Foco em descanso e sono<br>
+• Logistica e checagem de equipamento`
+  },
+  natacao_dicas: {
+    title: '🏊 Dicas - Natacao',
+    text: `<strong>Tecnica primeiro</strong><br>
+• Respiracao bilateral<br>
+• Posicao alta do corpo<br>
+• Catch alto, finalizacao na coxa<br>
+• Cadencia constante<br><br>
+<strong>Drills (em piscina 25m)</strong><br>
+• Catch-up, fingertip, deslize 6-batidas<br>
+• 1 serie de drills antes do contınuo<br>
+• Filme se possivel - voce ve o que sente errado`
+  },
+  bike_dicas: {
+    title: '🚴 Dicas - Bike',
+    text: `<strong>Cadencia</strong><br>
+• 80-90 rpm preserva pernas<br>
+• Marcha leve no comeco<br><br>
+<strong>Nutricao na bike</strong><br>
+• 1 gel/banana a cada 45-60min<br>
+• 500-700ml/h de liquido<br>
+• Eletrolitos sempre que >1h<br><br>
+<strong>Rolo de casa</strong><br>
+• Conta tanto quanto rua para Z2<br>
+• Use ventilador<br>
+• Toalha + agua sempre proximos`
+  },
+  brick_dicas: {
+    title: '🔥 Dicas - Brick',
+    text: `<strong>Por que brick?</strong><br>
+Ensina sua perna a correr depois da bike. No 70.3, voce sai da bike com a perna travada. Brick e o que treina isso.<br><br>
+<strong>Como fazer</strong><br>
+• Bike + corrida sem pausa (max 5min de transicao)<br>
+• Corrida curta no inicio: 2-5km<br>
+• Cadencia rapida e passada curta nos primeiros 1-2km<br>
+• Pace alvo: easy a moderado<br><br>
+<strong>Progressao</strong><br>
+Fase 2: brick leve 30min bike + 2km run<br>
+Fase 3: 1h bike + 5km run<br>
+Fase 4: 2h bike + 8-10km run`
+  },
+  forca_dicas: {
+    title: '💪 Dicas - Forca para Triatleta',
+    text: `<strong>Foco</strong><br>
+• Sustentacao postural<br>
+• Forca de perna controlada<br>
+• Core estavel<br><br>
+<strong>Evitar</strong><br>
+• Exaustao antes de bike/run longo<br>
+• Hipertrofia agressiva no pico<br><br>
+<strong>Frequencia</strong><br>
+• 2-3x por semana<br>
+• Sempre antes ou no mesmo dia que treino leve`
   },
   eletrolitos: {
     title: '💧 Protocolo Behyve',
@@ -1112,8 +1439,21 @@ function applyPreset(desc, prot, carb, cal) {
 document.getElementById('mealType')?.addEventListener('change', ()=>{ renderPresets(); updateMealTimeFromType(); });
 
 // ===== DATA =====
+const DEFAULT_RACES = [
+  { id:1, name:'LiveRun 21km', type:'meia_maratona', date:'2026-04-19',
+    distance:21.4, status:'concluida', timeMin:130, paceNum:6.07, pace:'6:04',
+    feeling:'cansado', goal:'Concluir 21k abaixo de 2h10', result:'2h10 - concluida',
+    notes:'Primeira meia maratona. Concluida com sucesso.' },
+  { id:2, name:'Ironman 70.3 Brasilia', type:'ironman_70_3', date:'2027-04-18',
+    distance:113, swimKm:1.9, bikeKm:90, runKm:21.1,
+    status:'planejada', goal:'Concluir bem, com seguranca e consistencia',
+    notes:'Prova principal - 12 meses de preparacao.' }
+];
+
 const DEFAULT_DATA = {
-  athlete: { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045' },
+  athlete: { name:'Mota', height:1.82, weight:78, bf:18.8, tmb:1687, phone:'+5561982550045', plan:'ironman_70_3' },
+  races: DEFAULT_RACES,
+  nextRaceId: 3,
   logs: [
     {id:1, date:'2026-03-26', type:'corrida', distance:6.23, time:37.38, pace:'6:00', paceNum:6, feeling:'moderado', recovery:['gelo'], notes:'Primeiro treino focado para meia maratona. Banheira de gelo apos treino.'},
     {id:2, date:'2026-03-27', type:'academia', distance:0, time:0, pace:'--', paceNum:0, feeling:'otimo', recovery:[], notes:'Treino de Costas superior com personal'},
@@ -1150,9 +1490,28 @@ const DEFAULT_DATA = {
 // API base: auto-detect if served from backend or opened as local file
 const API_BASE = (location.protocol === 'file:') ? 'http://localhost:3000' : '';
 
+function migrateData(data) {
+  // Ensure new fields exist on legacy localStorage payloads
+  if (!data.athlete) data.athlete = JSON.parse(JSON.stringify(DEFAULT_DATA.athlete));
+  if (!data.athlete.plan) data.athlete.plan = 'ironman_70_3';
+  if (!Array.isArray(data.races) || !data.races.length) {
+    data.races = JSON.parse(JSON.stringify(DEFAULT_RACES));
+  } else {
+    // Ensure LiveRun + Ironman seed always present
+    if (!data.races.find(r => r.name === 'LiveRun 21km')) data.races.unshift(JSON.parse(JSON.stringify(DEFAULT_RACES[0])));
+    if (!data.races.find(r => r.type === 'ironman_70_3')) data.races.push(JSON.parse(JSON.stringify(DEFAULT_RACES[1])));
+  }
+  if (!data.nextRaceId) data.nextRaceId = Math.max(3, ...data.races.map(r => (r.id||0)+1));
+  if (!Array.isArray(data.logs)) data.logs = [];
+  if (!Array.isArray(data.meals)) data.meals = [];
+  if (!data.nextId) data.nextId = Math.max(1, ...data.logs.map(l => (l.id||0)+1));
+  if (!data.nextMealId) data.nextMealId = Math.max(1, ...data.meals.map(m => (m.id||0)+1));
+  return data;
+}
+
 function loadData() {
   // Try localStorage first for instant load, then sync from server
-  try { const saved = localStorage.getItem('runcoach_data'); if(saved) return JSON.parse(saved); } catch(e){}
+  try { const saved = localStorage.getItem('runcoach_data'); if(saved) return migrateData(JSON.parse(saved)); } catch(e){}
   return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 let DATA = loadData();
@@ -1224,7 +1583,17 @@ async function loadFromServer(silent) {
         DATA.meals = mergedMeals;
         DATA.nextId = Math.max(DATA.nextId || 1, serverData.nextId || 1);
         DATA.nextMealId = Math.max(DATA.nextMealId || 1, serverData.nextMealId || 1);
-        if (serverData.athlete) DATA.athlete = serverData.athlete;
+        if (serverData.athlete) DATA.athlete = { ...serverData.athlete, plan: serverData.athlete.plan || 'ironman_70_3' };
+        // Merge races (server can have planned + history)
+        const serverRaces = Array.isArray(serverData.races) ? serverData.races : [];
+        const mergedRaces = [...(DATA.races||[])];
+        serverRaces.forEach(sr => {
+          const exists = mergedRaces.some(r => r.id === sr.id || (r.name === sr.name && r.date === sr.date));
+          if (!exists) mergedRaces.push(sr);
+        });
+        DATA.races = mergedRaces;
+        DATA.nextRaceId = Math.max(DATA.nextRaceId || 3, serverData.nextRaceId || 3);
+        DATA = migrateData(DATA);
         deduplicateMeals();
         try { localStorage.setItem('runcoach_data', JSON.stringify(DATA)); } catch(e){}
         // Update the selected date to today on refresh
@@ -1265,19 +1634,47 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-// ===== WEEK PLAN (Dom-Sab) =====
+// ===== WEEK PLAN (Dom-Sab) - Triathlon multimodalidade =====
 function generateWeekPlan(ref) {
   const today = new Date(ref);
-  const dl = Math.ceil((RACE_DATE - today)/(864e5));
-  const lw = dl<=7, tp = dl<=14;
+  const wn = getWeekNumber(today);
+  const phase = getPhase(wn);
+  const vol = PHASE_VOLUMES[phase.idx] || PHASE_VOLUMES[1];
+  // Sun=0 Mon=1 Tue=2 Wed=3 Thu=4 Fri=5 Sat=6
+  const swimMon = vol.swim[1], swimThu = vol.swim[4];
+  const bikeTue = vol.bike[2], bikeFri = vol.bike[5], bikeSat = vol.bike[6];
+  const runSun = vol.run[0], runTue = vol.run[2], runThu = vol.run[4];
+
+  const isPico = phase.idx >= 3;
+  const isPicoPlus = phase.idx >= 4;
+  const isTaper = phase.idx === 5;
+  const isRaceWeek = phase.idx === 6;
+  const longTitle = isPicoPlus ? 'Brick: Bike + Corrida' : (isPico ? 'Longao + tijolo opcional' : 'Longao Corrida');
+
   return [
-    { day:'Dom', type:'long', title:lw?'Shakeout':'Longao', desc:lw?'4km muito leve. Pace 6:00+.':tp?'14km pace confortavel (5:40-5:50).':dl>21?'16km progressivo: 10km@5:50 + 4km@5:35 + 2km@5:20.':'18km: 12km@5:50 + 4km@5:35 + 2km@5:25. Hidratar a cada 5km.', intensity:lw?'easy':'hard', km:lw?4:tp?14:dl>21?16:18, glossaryKeys:lw?['shakeout']:['longao','progressivo'] },
-    { day:'Seg', type:'gym', title:'Academia + Corrida Leve', desc:tp?'Musculacao leve (upper) + 4km easy 6:00-6:20':'Musculacao (upper) + 5km easy 5:50-6:10', intensity:'easy', km:tp?4:5, glossaryKeys:['easy pace'] },
-    { day:'Ter', type:'run', title:tp?'Corrida Leve':'Treino de Ritmo', desc:tp?'5km leve, pace 5:40-5:50.':'7km com 3km em pace alvo (5:30). Aquece 2km + 3km ritmo + 2km cool down.', intensity:tp?'easy':'moderate', km:tp?5:7, glossaryKeys:['pace alvo'] },
-    { day:'Qua', type:'tennis', title:'Academia + Tenis', desc:'Musculacao leve manha (core+upper). Tenis a noite. Sem corrida.', intensity:'moderate', km:0, glossaryKeys:[] },
-    { day:'Qui', type:'run', title:tp?'Corrida Recuperacao':'Corrida Facil + Strides', desc:tp?'4km leve, pace 6:00+.':'6km easy + 4x100m strides. Pace 5:50-6:00.', intensity:'easy', km:tp?4:6, glossaryKeys:tp?['descanso ativo']:['strides','easy pace'] },
-    { day:'Sex', type:'gym', title:'Perna com Personal', desc:tp?'Treino leve de perna - ativacao, nao exaustao.':'Treino pesado de perna. Sem corrida. Gelo recomendado.', intensity:tp?'moderate':'hard', km:0, glossaryKeys:[] },
-    { day:'Sab', type:'run', title:'Corrida Leve', desc:tp?'3km recuperacao antes do longao.':'5km easy pace (5:50-6:10). Preparar para longao.', intensity:'easy', km:tp?3:5, glossaryKeys:['easy pace'] }
+    { day:'Dom', type: isPicoPlus ? 'brick' : 'long', title: isRaceWeek ? 'Shakeout' : longTitle,
+      desc: isRaceWeek ? 'Recuperacao leve' : isPicoPlus ? `Brick leve: 1h bike + ${runSun}km run pos-bike` : `Longao corrida ${runSun}km - pace confortavel`,
+      intensity: isTaper||isRaceWeek?'easy':'hard',
+      km: runSun, swimM: 0, bikeKm: isPicoPlus?30:0,
+      glossaryKeys: isPicoPlus?['brick','longao']:['longao'] },
+    { day:'Seg', type:'swim', title:'Natacao + Forca Superior',
+      desc:`Natacao tecnica ${swimMon}m + musculacao upper/core`,
+      intensity:'moderate', km:0, swimM:swimMon, bikeKm:0, glossaryKeys:['natacao_tecnica'] },
+    { day:'Ter', type:'run', title: bikeTue ? 'Corrida + Bike rolo' : 'Corrida Leve',
+      desc: bikeTue ? `Corrida ${runTue}km easy + ${bikeTue}km bike rolo` : `${runTue}km easy/moderado`,
+      intensity:'moderate', km:runTue, swimM:0, bikeKm:bikeTue, glossaryKeys:['easy pace'] },
+    { day:'Qua', type:'gym', title:'Musculacao + Mobilidade',
+      desc:'Forca controlada + mobilidade. Recuperacao ativa.',
+      intensity:'moderate', km:0, swimM:0, bikeKm:0, glossaryKeys:[] },
+    { day:'Qui', type:'swim', title: runThu ? 'Natacao + Corrida leve' : 'Natacao',
+      desc: runThu ? `Natacao ${swimThu}m + corrida leve ${runThu}km opcional` : `Natacao ${swimThu}m`,
+      intensity:'moderate', km:runThu, swimM:swimThu, bikeKm:0, glossaryKeys:['natacao_tecnica'] },
+    { day:'Sex', type:'gym', title:'Forca Perna + Bike leve',
+      desc: bikeFri ? `Musculacao perna leve + ${bikeFri}km bike rolo` : 'Forca leve. Sem volume alto.',
+      intensity: isPicoPlus?'hard':'easy', km:0, swimM:0, bikeKm:bikeFri, glossaryKeys:[] },
+    { day:'Sab', type:'bike', title:'Bike Principal',
+      desc: bikeSat>=60 ? `Bike longa ${bikeSat}km - rua com irmao se possivel` : `Bike ${bikeSat}km - rolo ou rua`,
+      intensity: bikeSat>=60?'hard':'moderate', km:0, swimM:0, bikeKm:bikeSat, glossaryKeys:['bike_z2'] }
   ];
 }
 
@@ -1287,6 +1684,12 @@ function getSunday(d) { const r=new Date(d); r.setDate(r.getDate()-r.getDay()); 
 function getSaturday(d) { const s=getSunday(d); s.setDate(s.getDate()+6); return s; }
 function calcPace(km,min) { if(!km||!min) return '--:--'; const p=min/km; return Math.floor(p)+':'+String(Math.round((p-Math.floor(p))*60)).padStart(2,'0'); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
+function fmtDateBR(dateStr) { const d=new Date(dateStr+'T12:00:00'); const m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear(); }
+function isRunType(t) { return t==='corrida' || t==='run' || t==='brick'; }
+function getRunKm(l) { if (l.type==='corrida') return l.distance||0; if (l.type==='brick') return (l.brickRunKm||0); return 0; }
+function getBikeKm(l) { if (l.type==='bike') return l.distance||0; if (l.type==='brick') return (l.brickBikeKm||0); return 0; }
+function getSwimM(l) { if (l.type==='natacao') return l.swimMeters||0; return 0; }
+function isStrengthLog(l) { return l.type==='musculacao' || l.type==='academia'; }
 
 // Selected date for nutrition view (default: today)
 let nutriSelectedDate = todayStr();
@@ -1361,8 +1764,10 @@ function switchTab(name,el) {
   document.getElementById('tab-'+name).classList.add('active');
   if(el) el.classList.add('active');
   if(name==='progress') { renderChart(); renderProteinChart(); updateUI(); }
-  if(name==='log') document.getElementById('logDate').value = todayStr();
+  if(name==='log') { document.getElementById('logDate').value = todayStr(); showModalityFields(document.getElementById('logType').value); }
   if(name==='nutri') { nutriSelectedDate = nutriSelectedDate || todayStr(); renderNutrition(); }
+  if(name==='races') { renderRaces(); }
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function switchLogSub(sub) {
@@ -1516,32 +1921,105 @@ function quickMeal(desc, prot, carb, cal) {
   document.getElementById('mealCal').value = ck + cal;
 }
 
-// ===== SUBMIT WORKOUT =====
+// ===== SUBMIT WORKOUT (multi-modality) =====
 function submitLog() {
   const type=document.getElementById('logType').value;
-  const dist=parseFloat(document.getElementById('logDistance').value)||0;
-  const time=parseFloat(document.getElementById('logTime').value)||0;
   const date=document.getElementById('logDate').value||todayStr();
   const notes=document.getElementById('logNotes').value;
-  const entry = { id:editingId||DATA.nextId++, date, type, distance:dist, time, pace:type==='corrida'?calcPace(dist,time):'--', paceNum:type==='corrida'&&dist?time/dist:0, feeling:selectedFeeling||'moderado', recovery:[...selectedRecovery], notes };
-  if(editingId) { const idx=DATA.logs.findIndex(l=>l.id===editingId); if(idx>=0) DATA.logs[idx]=entry; editingId=null; document.getElementById('logSubmitBtn').textContent='Salvar Treino'; document.getElementById('logCancelBtn').style.display='none'; showToast('Treino atualizado!'); }
-  else { DATA.logs.push(entry); showToast('Treino salvo!'); }
+  const entry = { id:editingId||DATA.nextId++, date, type, feeling:selectedFeeling||'moderado', recovery:[...selectedRecovery], notes };
+  if (type==='corrida') {
+    const dist=parseFloat(document.getElementById('logDistance').value)||0;
+    const time=parseFloat(document.getElementById('logTime').value)||0;
+    entry.distance=dist; entry.time=time;
+    entry.pace=calcPace(dist,time); entry.paceNum=dist?time/dist:0;
+  } else if (type==='bike') {
+    const dist=parseFloat(document.getElementById('logBikeKm').value)||0;
+    const time=parseFloat(document.getElementById('logBikeTime').value)||0;
+    entry.distance=dist; entry.time=time;
+    entry.bikeType=document.getElementById('logBikeType').value;
+    entry.avgSpeed=time>0?+(dist/(time/60)).toFixed(1):0;
+  } else if (type==='natacao') {
+    entry.swimMeters=parseInt(document.getElementById('logSwimM').value)||0;
+    entry.time=parseFloat(document.getElementById('logSwimTime').value)||0;
+    entry.poolSize=parseInt(document.getElementById('logSwimPool').value)||25;
+    entry.swimFocus=document.getElementById('logSwimFocus').value;
+  } else if (type==='brick') {
+    entry.brickBikeKm=parseFloat(document.getElementById('brickBikeKm').value)||0;
+    entry.brickBikeTime=parseFloat(document.getElementById('brickBikeTime').value)||0;
+    entry.brickRunKm=parseFloat(document.getElementById('brickRunKm').value)||0;
+    entry.brickRunTime=parseFloat(document.getElementById('brickRunTime').value)||0;
+    entry.brickTransition=document.getElementById('brickTransition').value;
+    entry.distance = entry.brickBikeKm + entry.brickRunKm;
+    entry.time = entry.brickBikeTime + entry.brickRunTime;
+  } else if (type==='musculacao') {
+    entry.muscleGroup=document.getElementById('logMuscleGroup').value;
+    entry.time=parseFloat(document.getElementById('logGymTime').value)||0;
+  }
+  if(editingId) {
+    const idx=DATA.logs.findIndex(l=>l.id===editingId); if(idx>=0) DATA.logs[idx]=entry;
+    editingId=null;
+    document.getElementById('logSubmitBtn').textContent='Salvar Treino';
+    document.getElementById('logCancelBtn').style.display='none';
+    showToast('Treino atualizado!');
+  } else { DATA.logs.push(entry); showToast('Treino salvo!'); }
   saveData(); resetForm(); updateUI(); switchTab('home',document.querySelector('.nav-item'));
+}
+function showModalityFields(type) {
+  ['runFields','bikeFields','swimFields','brickFields','gymFields'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
+  if (type==='corrida') document.getElementById('runFields').style.display='block';
+  else if (type==='bike') document.getElementById('bikeFields').style.display='block';
+  else if (type==='natacao') document.getElementById('swimFields').style.display='block';
+  else if (type==='brick') document.getElementById('brickFields').style.display='block';
+  else if (type==='musculacao') document.getElementById('gymFields').style.display='block';
 }
 function editLog(id) {
   const l=DATA.logs.find(x=>x.id===id); if(!l) return;
   editingId=id;
-  document.getElementById('logDate').value=l.date; document.getElementById('logType').value=l.type;
-  document.getElementById('logDistance').value=l.distance||''; document.getElementById('logTime').value=l.time||'';
-  document.getElementById('logPace').value=l.pace||''; document.getElementById('logNotes').value=l.notes||'';
-  document.getElementById('runFields').style.display=l.type==='corrida'?'block':'none';
-  document.getElementById('logSubmitBtn').textContent='Atualizar Treino'; document.getElementById('logCancelBtn').style.display='block';
-  selectedFeeling=l.feeling; document.querySelectorAll('#feelingOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',b.dataset.value===l.feeling));
-  selectedRecovery=[...(l.recovery||[])]; document.querySelectorAll('#recoveryOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',selectedRecovery.includes(b.dataset.value)));
+  document.getElementById('logDate').value=l.date;
+  // Map legacy 'academia' to 'musculacao'
+  const t = l.type==='academia' ? 'musculacao' : l.type;
+  document.getElementById('logType').value=t;
+  document.getElementById('logNotes').value=l.notes||'';
+  showModalityFields(t);
+  if (t==='corrida') {
+    document.getElementById('logDistance').value=l.distance||'';
+    document.getElementById('logTime').value=l.time||'';
+    document.getElementById('logPace').value=l.pace||'';
+  } else if (t==='bike') {
+    document.getElementById('logBikeKm').value=l.distance||'';
+    document.getElementById('logBikeTime').value=l.time||'';
+    document.getElementById('logBikeType').value=l.bikeType||'rolo';
+    document.getElementById('logBikeSpeed').value=l.avgSpeed?l.avgSpeed+' km/h':'';
+  } else if (t==='natacao') {
+    document.getElementById('logSwimM').value=l.swimMeters||'';
+    document.getElementById('logSwimTime').value=l.time||'';
+    document.getElementById('logSwimPool').value=l.poolSize||25;
+    document.getElementById('logSwimFocus').value=l.swimFocus||'tecnica';
+  } else if (t==='brick') {
+    document.getElementById('brickBikeKm').value=l.brickBikeKm||'';
+    document.getElementById('brickBikeTime').value=l.brickBikeTime||'';
+    document.getElementById('brickRunKm').value=l.brickRunKm||'';
+    document.getElementById('brickRunTime').value=l.brickRunTime||'';
+    document.getElementById('brickTransition').value=l.brickTransition||'';
+  } else if (t==='musculacao') {
+    document.getElementById('logMuscleGroup').value=l.muscleGroup||'upper';
+    document.getElementById('logGymTime').value=l.time||'';
+  }
+  document.getElementById('logSubmitBtn').textContent='Atualizar Treino';
+  document.getElementById('logCancelBtn').style.display='block';
+  selectedFeeling=l.feeling;
+  document.querySelectorAll('#feelingOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',b.dataset.value===l.feeling));
+  selectedRecovery=[...(l.recovery||[])];
+  document.querySelectorAll('#recoveryOptions .feeling-btn').forEach(b=>b.classList.toggle('selected',selectedRecovery.includes(b.dataset.value)));
   switchTab('log',document.querySelectorAll('.nav-item')[2]); switchLogSub('treino');
 }
 function cancelEdit() { editingId=null; document.getElementById('logSubmitBtn').textContent='Salvar Treino'; document.getElementById('logCancelBtn').style.display='none'; resetForm(); }
-function resetForm() { ['logDistance','logTime','logNotes','logPace'].forEach(id=>{document.getElementById(id).value='';}); document.getElementById('logDate').value=todayStr(); selectedFeeling=null; selectedRecovery=[]; document.querySelectorAll('.feeling-btn').forEach(b=>b.classList.remove('selected')); }
+function resetForm() {
+  ['logDistance','logTime','logNotes','logPace','logBikeKm','logBikeTime','logBikeSpeed','logSwimM','logSwimTime','logGymTime','brickBikeKm','brickBikeTime','brickRunKm','brickRunTime','brickTransition'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  document.getElementById('logDate').value=todayStr();
+  selectedFeeling=null; selectedRecovery=[];
+  document.querySelectorAll('.feeling-btn').forEach(b=>b.classList.remove('selected'));
+}
 
 // ===== SUBMIT MEAL =====
 // Track which date we're registering a meal for
@@ -1618,7 +2096,11 @@ function updateMealTimeFromType() {
 // Auto pace calc
 document.getElementById('logDistance')?.addEventListener('input',()=>{const d=parseFloat(document.getElementById('logDistance').value),t=parseFloat(document.getElementById('logTime').value); document.getElementById('logPace').value=calcPace(d,t);});
 document.getElementById('logTime')?.addEventListener('input',()=>{const d=parseFloat(document.getElementById('logDistance').value),t=parseFloat(document.getElementById('logTime').value); document.getElementById('logPace').value=calcPace(d,t);});
-document.getElementById('logType')?.addEventListener('change',function(){document.getElementById('runFields').style.display=this.value==='corrida'?'block':'none';});
+document.getElementById('logType')?.addEventListener('change',function(){ showModalityFields(this.value); });
+// Auto bike speed calc
+function recalcBikeSpeed(){const d=parseFloat(document.getElementById('logBikeKm').value)||0; const t=parseFloat(document.getElementById('logBikeTime').value)||0; const spd=t>0?+(d/(t/60)).toFixed(1):0; document.getElementById('logBikeSpeed').value=spd?spd+' km/h':'';}
+document.getElementById('logBikeKm')?.addEventListener('input',recalcBikeSpeed);
+document.getElementById('logBikeTime')?.addEventListener('input',recalcBikeSpeed);
 
 // ===== RENDER NUTRITION TAB =====
 function renderNutrition() {
@@ -1729,29 +2211,45 @@ function renderNutrition() {
 // ===== MAIN RENDER =====
 function updateUI() {
   const now=new Date(), dl=Math.ceil((RACE_DATE-now)/864e5);
-  const totalD=Math.ceil((RACE_DATE-PLAN_START)/864e5), dp=Math.max(0,totalD-dl), prog=Math.min(1,dp/totalD);
+  const totalD=Math.ceil((RACE_DATE-PLAN_START)/864e5), dp=Math.max(0,totalD-dl), prog=Math.min(1,Math.max(0,dp/totalD));
   const hour=now.getHours();
   document.getElementById('greeting').textContent = hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite';
   document.getElementById('headerDate').textContent = now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
   const wn=getWeekNumber(now);
+  const phase=getPhase(wn);
   document.getElementById('weekBadge').textContent='Semana '+wn;
   document.getElementById('daysLeft').textContent=dl;
   document.getElementById('countdownRing').style.strokeDashoffset=150.8*(1-prog);
-  document.getElementById('countdownSub').textContent = dl<=7?'Semana da prova - taper total':dl<=14?'Fase de taper':dl<=21?'Pico de forma':'Construcao de base';
+  document.getElementById('countdownSub').textContent = `Fase ${phase.idx}/6 - ${phase.name}`;
+  const itxt = document.getElementById('ironmanCountdownText'); if (itxt) itxt.textContent = `${dl} dias - 18 de Abril de 2027`;
+
+  // Render phase strip
+  const phBar = document.getElementById('phaseBar');
+  if (phBar) {
+    phBar.innerHTML = PHASES.map(p => {
+      const cls = p.idx===phase.idx ? 'active' : (p.endWeek < wn ? 'done' : '');
+      return `<div class="phase-pill ${cls}" title="${p.desc}">${p.idx}. ${p.short}</div>`;
+    }).join('');
+  }
 
   const plan=generateWeekPlan(now.toISOString().slice(0,10)), dayIdx=now.getDay();
   const sun=getSunday(now), sat=getSaturday(now);
-  const wkTargetKm=plan.reduce((s,d)=>s+d.km,0);
-  const wkTargetSessions=plan.filter(d=>d.km>0||d.type==='gym'||d.type==='tennis').length; // all training days
+  const wkTargetRunKm=plan.reduce((s,d)=>s+(d.km||0)+(d.type==='brick'?0:0),0);
+  const wkTargetBikeKm=plan.reduce((s,d)=>s+(d.bikeKm||0),0);
+  const wkTargetSwimM=plan.reduce((s,d)=>s+(d.swimM||0),0);
+  const wkTargetSessions=plan.filter(d=>d.type!=='rest').length;
 
-  // ALL logs in the week (not just corrida)
+  // ALL logs in the week
   const wkAllLogs=DATA.logs.filter(l=>{const ld=new Date(l.date+'T12:00:00'); return ld>=sun&&ld<=sat;});
   const wkRuns=wkAllLogs.filter(l=>l.type==='corrida');
-  const wkDoneKm=wkRuns.reduce((s,l)=>s+l.distance,0);
-  const wkLeftKm=Math.max(0,wkTargetKm-wkDoneKm);
-  const wkPct=wkTargetKm>0?Math.min(100,Math.round(wkDoneKm/wkTargetKm*100)):0;
-  const avgPN=wkRuns.length?wkRuns.reduce((s,l)=>s+l.paceNum,0)/wkRuns.length:0;
-  // Count unique training days (any type of training)
+  const wkRunKm=wkAllLogs.reduce((s,l)=>s+getRunKm(l),0);
+  const wkBikeKm=wkAllLogs.reduce((s,l)=>s+getBikeKm(l),0);
+  const wkSwimM=wkAllLogs.reduce((s,l)=>s+getSwimM(l),0);
+  const wkGymN=wkAllLogs.filter(isStrengthLog).length;
+  const wkTotalKm = wkRunKm + wkBikeKm + (wkSwimM/1000);
+  const wkTargetTotal = wkTargetRunKm + wkTargetBikeKm + (wkTargetSwimM/1000);
+  const wkPct=wkTargetTotal>0?Math.min(100,Math.round(wkTotalKm/wkTargetTotal*100)):0;
+  const avgPN=wkRuns.length?wkRuns.reduce((s,l)=>s+(l.paceNum||0),0)/wkRuns.length:0;
   const wkTrainingDays=new Set(wkAllLogs.map(l=>l.date)).size;
 
   // Today macros for stats bar
@@ -1760,30 +2258,37 @@ function updateUI() {
 
   const sunS=sun.toLocaleDateString('pt-BR',{day:'numeric',month:'short'}), satS=sat.toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
   document.getElementById('weekGoalSection').innerHTML=`
-    <div class="week-goal-header"><div class="week-goal-title">Meta Semana ${wn}</div><div class="week-goal-period">${sunS} - ${satS}</div></div>
+    <div class="week-goal-header"><div class="week-goal-title">Meta Semana ${wn} - ${phase.short}</div><div class="week-goal-period">${sunS} - ${satS}</div></div>
     <div class="week-goal-progress"><div class="week-goal-bar-container"><div class="week-goal-bar-fill orange" style="width:${wkPct}%"></div></div><div class="week-goal-pct" style="color:var(--accent);">${wkPct}%</div></div>
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:10px;">
       <div class="week-goal-bar-container"><div class="week-goal-bar-fill purple" style="width:${Math.min(100,Math.round(macros.protein/PROTEIN_GOAL*100))}%"></div></div>
       <div class="week-goal-pct" style="color:var(--purple);font-size:12px;">${macros.protein}/${PROTEIN_GOAL}g prot</div>
     </div>
     <div class="week-goal-stats">
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--accent)">${wkDoneKm.toFixed(1)}</div><div class="week-goal-stat-label">Km Feitos</div></div>
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--cyan)">${wkTargetKm}</div><div class="week-goal-stat-label">Meta Km</div></div>
-      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:${wkLeftKm>0?'var(--yellow)':'var(--green)'}">${wkLeftKm.toFixed(1)}</div><div class="week-goal-stat-label">Km Faltam</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--run)">${wkRunKm.toFixed(1)}</div><div class="week-goal-stat-label">Run / ${wkTargetRunKm}</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--bike)">${wkBikeKm.toFixed(0)}</div><div class="week-goal-stat-label">Bike / ${wkTargetBikeKm}</div></div>
+      <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--swim)">${wkSwimM}</div><div class="week-goal-stat-label">Swim / ${wkTargetSwimM}</div></div>
       <div class="week-goal-stat"><div class="week-goal-stat-value" style="color:var(--green)">${wkTrainingDays}/${wkTargetSessions}</div><div class="week-goal-stat-label">Treinos</div></div>
     </div>`;
 
-  document.getElementById('weekKm').textContent=wkDoneKm.toFixed(1);
+  document.getElementById('weekRunKm').textContent=wkRunKm.toFixed(1);
+  document.getElementById('weekBikeKm').textContent=wkBikeKm.toFixed(0);
+  document.getElementById('weekSwimM').textContent=wkSwimM;
+  document.getElementById('weekGymN').textContent=wkGymN;
+  document.getElementById('weekKm').textContent=wkTotalKm.toFixed(1);
   document.getElementById('avgPace').textContent=avgPN?calcPace(1,avgPN):'--:--';
 
   // Today card
   const tp=plan[dayIdx];
   if(tp) {
-    document.getElementById('todayType').textContent=tp.type.toUpperCase()+' - '+tp.intensity.toUpperCase();
+    const modLabel = ({run:'CORRIDA',bike:'BIKE',swim:'NATACAO',gym:'FORCA',brick:'BRICK',mobility:'MOBILIDADE',long:'LONGAO',rest:'DESCANSO'})[tp.type] || tp.type.toUpperCase();
+    document.getElementById('todayType').textContent=modLabel+' - '+tp.intensity.toUpperCase();
     document.getElementById('todayTitle').textContent=tp.title;
     document.getElementById('todayDesc').innerHTML=tp.desc;
     const det=document.getElementById('todayDetails'); det.innerHTML='';
-    if(tp.km>0) det.innerHTML+=`<div class="today-detail"><strong>${tp.km}km</strong></div>`;
+    if(tp.km>0) det.innerHTML+=`<div class="today-detail"><strong>${tp.km}km</strong> run</div>`;
+    if(tp.bikeKm>0) det.innerHTML+=`<div class="today-detail"><strong>${tp.bikeKm}km</strong> bike</div>`;
+    if(tp.swimM>0) det.innerHTML+=`<div class="today-detail"><strong>${tp.swimM}m</strong> swim</div>`;
     det.innerHTML+=`<div class="today-detail">${tp.intensity}</div>`;
     (tp.glossaryKeys||[]).filter(k=>GLOSSARY[k]).forEach(k=>{ det.innerHTML+=`<button class="info-btn" onclick="showTooltip('${k}')">?</button>`; });
   }
@@ -1816,18 +2321,29 @@ function updateUI() {
   // Week grid
   const grid=document.getElementById('weekGrid'); grid.innerHTML='';
   plan.forEach((d,i)=>{
-    const iT=i===dayIdx, dc=d.type==='long'?'long':d.type==='rest'?'rest':d.type==='tennis'?'tennis':d.type==='run'?'run':'gym';
+    const iT=i===dayIdx;
+    const dc=d.type==='long'?'long':d.type==='rest'?'rest':d.type==='swim'?'swim':d.type==='bike'?'bike':d.type==='brick'?'brick':d.type==='mobility'?'mobility':d.type==='run'?'run':'gym';
     const ib=(d.glossaryKeys||[]).filter(k=>GLOSSARY[k]).map(k=>`<button class="info-btn" onclick="event.stopPropagation();showTooltip('${k}')">?</button>`).join('');
-    grid.innerHTML+=`<div class="day-row ${iT?'today':''}" onclick="showDayDetail(${i})"><div class="day-dot ${dc}"></div><div class="day-name">${d.day}</div><div class="day-workout">${d.title} ${ib}</div><div class="day-badge ${d.intensity}">${d.km>0?d.km+'km':d.intensity}</div></div>`;
+    let badgeText = d.intensity;
+    if (d.km>0) badgeText = d.km+'km';
+    else if (d.bikeKm>0) badgeText = d.bikeKm+'km bk';
+    else if (d.swimM>0) badgeText = d.swimM+'m';
+    grid.innerHTML+=`<div class="day-row ${iT?'today':''}" onclick="showDayDetail(${i})"><div class="day-dot ${dc}"></div><div class="day-name">${d.day}</div><div class="day-workout">${d.title} ${ib}</div><div class="day-badge ${d.intensity}">${badgeText}</div></div>`;
   });
 
-  // Progress stats
-  const allR=DATA.logs.filter(l=>l.type==='corrida'), totKm=allR.reduce((s,l)=>s+l.distance,0);
+  // Progress stats - per modality
+  const allR=DATA.logs.filter(l=>l.type==='corrida'), totRunKm=allR.reduce((s,l)=>s+(l.distance||0),0);
+  const allB=DATA.logs.filter(l=>l.type==='bike'), totBikeKm=allB.reduce((s,l)=>s+(l.distance||0),0);
+  const allS=DATA.logs.filter(l=>l.type==='natacao'), totSwimM=allS.reduce((s,l)=>s+(l.swimMeters||0),0);
+  const totSessions = DATA.logs.filter(l=>l.type!=='descanso'&&l.type!=='mobilidade').length;
   const bp=allR.length?Math.min(...allR.map(l=>l.paceNum).filter(p=>p>0)):0;
-  document.getElementById('totalKmAll').textContent=totKm.toFixed(1);
+  document.getElementById('totalKmAll').textContent=totRunKm.toFixed(1);
   document.getElementById('bestPace').textContent=bp?calcPace(1,bp):'--:--';
-  document.getElementById('totalSessions').textContent=allR.length;
-  document.getElementById('avgWeekKm').textContent=(totKm/Math.max(1,wn)).toFixed(1);
+  document.getElementById('totalSessions').textContent=totSessions;
+  document.getElementById('avgWeekKm').textContent=(totRunKm/Math.max(1,wn)).toFixed(1);
+  // Update extra modality summary
+  const totBikeEl = document.getElementById('totalBikeKm'); if (totBikeEl) totBikeEl.textContent = totBikeKm.toFixed(0);
+  const totSwimEl = document.getElementById('totalSwimM'); if (totSwimEl) totSwimEl.textContent = totSwimM;
 
   // Nutrition progress stats
   const allDates=[...new Set(DATA.meals.map(m=>m.date))];
@@ -1856,23 +2372,34 @@ function updateUI() {
     const dayMeals = DATA.meals.filter(m=>m.date===dateStr);
     const dayProt = dayMeals.reduce((s,m)=>s+m.protein,0);
     const dayCal = dayMeals.reduce((s,m)=>s+m.cal,0);
-    const hasRun = dayLogs.some(l=>l.type==='corrida');
-    const hasGym = dayLogs.some(l=>l.type==='academia'||l.type==='tenis');
+    const hasRun = dayLogs.some(l=>l.type==='corrida'||l.type==='brick');
+    const hasBike = dayLogs.some(l=>l.type==='bike');
+    const hasSwim = dayLogs.some(l=>l.type==='natacao');
+    const hasGym = dayLogs.some(isStrengthLog);
 
     let html = `<div class="history-day-card">`;
     html += `<div class="history-day-header">`;
     html += `<div><div class="history-day-date">${dayNames[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}</div></div>`;
     html += `<div class="history-day-badges">`;
-    if (hasRun) html += `<span class="history-day-badge" style="background:rgba(249,115,22,0.15);color:var(--accent);">&#127939; Corrida</span>`;
-    if (hasGym) html += `<span class="history-day-badge" style="background:rgba(59,130,246,0.15);color:var(--blue);">&#128170; Treino</span>`;
+    if (hasRun) html += `<span class="history-day-badge" style="background:rgba(227,10,31,0.15);color:var(--run);">&#127939; Run</span>`;
+    if (hasBike) html += `<span class="history-day-badge" style="background:rgba(255,107,26,0.15);color:var(--bike);">&#128692; Bike</span>`;
+    if (hasSwim) html += `<span class="history-day-badge" style="background:rgba(0,184,212,0.15);color:var(--swim);">&#127946; Swim</span>`;
+    if (hasGym) html += `<span class="history-day-badge" style="background:rgba(168,85,247,0.15);color:var(--gym);">&#128170; Forca</span>`;
     if (dayMeals.length) html += `<span class="history-day-badge" style="background:rgba(168,85,247,0.15);color:var(--purple);">${dayProt}g prot</span>`;
     html += `</div></div>`;
 
     // Training entries
     dayLogs.forEach(item => {
-      const tl = item.type==='corrida'?'Corrida':item.type==='academia'?'Academia':item.type==='tenis'?'Tenis':'Outro';
+      const labels = { corrida:'🏃 Corrida', bike:'🚴 Bike', natacao:'🏊 Natacao', musculacao:'💪 Musculacao', academia:'💪 Academia', brick:'🔥 Brick', mobilidade:'🧘 Mobilidade', descanso:'😴 Descanso', tenis:'🎾 Tenis' };
+      const tl = labels[item.type] || item.type;
+      let detail = '';
+      if (item.type==='corrida') detail = ` ${item.distance||0}km${item.pace?' @ '+item.pace:''}`;
+      else if (item.type==='bike') detail = ` ${item.distance||0}km${item.bikeType?' ('+item.bikeType+')':''}${item.avgSpeed?' '+item.avgSpeed+'km/h':''}`;
+      else if (item.type==='natacao') detail = ` ${item.swimMeters||0}m${item.poolSize?' ('+item.poolSize+'m)':''}${item.swimFocus?' - '+item.swimFocus:''}`;
+      else if (item.type==='brick') detail = ` ${item.brickBikeKm||0}km bike + ${item.brickRunKm||0}km run`;
+      else if (item.type==='musculacao'||item.type==='academia') detail = item.muscleGroup?` ${item.muscleGroup}`:'';
       html += `<div class="history-meal-row">
-        <span>&#127939; ${tl} ${item.distance>0?' '+item.distance+'km':''}${item.pace&&item.pace!=='--'?' @ '+item.pace:''}${item.feeling?' - '+item.feeling:''}</span>
+        <span>${tl}${detail}${item.feeling?' - '+item.feeling:''}</span>
         <button class="history-edit" onclick="editLog(${item.id})" style="position:static;font-size:14px;">&#9998;</button>
       </div>`;
     });
@@ -1967,15 +2494,156 @@ function renderProteinChart() {
   });
 }
 
+// ===== RACES =====
+const RACE_TYPE_LABEL = {
+  meia_maratona:'Meia Maratona', corrida_5k:'Corrida 5K', corrida_10k:'Corrida 10K',
+  tri_sprint:'Triathlon Sprint', tri_olimpico:'Triathlon Olimpico',
+  simulado:'Simulado', ironman_70_3:'Ironman 70.3', outro:'Outro'
+};
+const RACE_TYPE_ICON = {
+  meia_maratona:'🏃', corrida_5k:'🏃', corrida_10k:'🏃',
+  tri_sprint:'🏊', tri_olimpico:'🏊',
+  simulado:'⚡', ironman_70_3:'🏆', outro:'🏁'
+};
+
+let editingRaceId = null;
+
+function submitRace() {
+  const name=document.getElementById('raceName').value.trim();
+  const type=document.getElementById('raceType').value;
+  const date=document.getElementById('raceDate').value;
+  const dist=parseFloat(document.getElementById('raceDistance').value)||0;
+  const status=document.getElementById('raceStatus').value;
+  const goal=document.getElementById('raceGoal').value.trim();
+  const notes=document.getElementById('raceNotes').value.trim();
+  if(!name){ showToast('Informe o nome'); return; }
+  if(!date){ showToast('Informe a data'); return; }
+  const entry = { id: editingRaceId || DATA.nextRaceId++, name, type, date, distance: dist, status, goal, notes };
+  if(status==='concluida' && goal && /\d/.test(goal)) entry.result = goal;
+  if (editingRaceId) {
+    const idx = DATA.races.findIndex(r=>r.id===editingRaceId);
+    if (idx>=0) DATA.races[idx] = { ...DATA.races[idx], ...entry };
+    editingRaceId = null;
+    document.getElementById('raceSubmitBtn').textContent='Salvar Prova';
+    document.getElementById('raceCancelBtn').style.display='none';
+    showToast('Prova atualizada!');
+  } else {
+    DATA.races.push(entry);
+    showToast('Prova cadastrada!');
+  }
+  saveData(); resetRaceForm(); renderRaces();
+}
+function editRace(id) {
+  const r = DATA.races.find(x=>x.id===id); if (!r) return;
+  editingRaceId = id;
+  document.getElementById('raceName').value = r.name||'';
+  document.getElementById('raceType').value = r.type||'meia_maratona';
+  document.getElementById('raceDate').value = r.date||'';
+  document.getElementById('raceDistance').value = r.distance||'';
+  document.getElementById('raceStatus').value = r.status||'planejada';
+  document.getElementById('raceGoal').value = r.goal || r.result || '';
+  document.getElementById('raceNotes').value = r.notes||'';
+  document.getElementById('raceSubmitBtn').textContent='Atualizar Prova';
+  document.getElementById('raceCancelBtn').style.display='block';
+  switchTab('races', document.querySelectorAll('.nav-item')[1]);
+  window.scrollTo({top:document.getElementById('raceName').offsetTop-80, behavior:'smooth'});
+}
+function cancelRaceEdit() {
+  editingRaceId=null;
+  document.getElementById('raceSubmitBtn').textContent='Salvar Prova';
+  document.getElementById('raceCancelBtn').style.display='none';
+  resetRaceForm();
+}
+function deleteRace(id) {
+  const r = DATA.races.find(x=>x.id===id);
+  if (!r) return;
+  if (r.type==='ironman_70_3' || r.name==='LiveRun 21km') { showToast('Esta prova nao pode ser removida'); return; }
+  if (!confirm(`Remover a prova "${r.name}"?`)) return;
+  DATA.races = DATA.races.filter(x=>x.id!==id);
+  saveData(); renderRaces();
+  showToast('Prova removida');
+}
+function resetRaceForm() {
+  ['raceName','raceDistance','raceGoal','raceNotes','raceDate'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  document.getElementById('raceType').value='meia_maratona';
+  document.getElementById('raceStatus').value='planejada';
+}
+
+function getMilestones() {
+  const now = new Date();
+  return [
+    { months:3,  label:'3 meses',  status:'Nadar continuo, bike confortavel 1h, corrida mantida' },
+    { months:6,  label:'6 meses',  status:'Bike 2h, brick leve, natacao mais continua' },
+    { months:9,  label:'9 meses',  status:'Simulado parcial, bike longa, corrida pos-bike' },
+    { months:12, label:'12 meses', status:'Pronto para Ironman 70.3 Brasilia' }
+  ].map(m => {
+    const target = new Date(PLAN_START); target.setMonth(target.getMonth()+m.months);
+    const reached = now >= target;
+    return { ...m, target, reached };
+  });
+}
+
+function renderRaces() {
+  // Milestones
+  const ml = document.getElementById('milestonesList');
+  if (ml) {
+    const ms = getMilestones();
+    ml.innerHTML = ms.map(m => `
+      <div class="race-card ${m.reached?'done':'planned'}">
+        <div class="race-card-icon">${m.reached?'✅':'🎯'}</div>
+        <div class="race-card-info">
+          <div class="race-card-name">${m.label} - ${m.target.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})}</div>
+          <div class="race-card-meta">${m.status}</div>
+        </div>
+        <div class="race-card-status ${m.reached?'done':'planned'}">${m.reached?'Atingido':'A caminho'}</div>
+      </div>`).join('');
+  }
+  // Race history
+  const list = document.getElementById('racesList');
+  if (!list) return;
+  const sorted = [...(DATA.races||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if (!sorted.length) { list.innerHTML='<div style="text-align:center;color:var(--text3);padding:20px;">Nenhuma prova cadastrada.</div>'; return; }
+  list.innerHTML = sorted.map(r => {
+    const icon = RACE_TYPE_ICON[r.type] || '🏁';
+    const lbl = RACE_TYPE_LABEL[r.type] || r.type;
+    const isPrincipal = r.type==='ironman_70_3';
+    const dist = r.type==='ironman_70_3'
+      ? `${r.swimKm}km swim + ${r.bikeKm}km bike + ${r.runKm}km run`
+      : (r.distance ? `${r.distance}km` : '');
+    return `<div class="race-card ${r.status==='concluida'?'done':'planned'}">
+      <div class="race-card-icon">${icon}</div>
+      <div class="race-card-info">
+        <div class="race-card-name">${r.name}</div>
+        <div class="race-card-meta">${lbl} - ${fmtDateBR(r.date)} ${dist?'- '+dist:''}</div>
+        ${r.result?`<div class="race-card-result">${r.result}</div>`:''}
+        ${r.goal && !r.result?`<div class="race-card-meta" style="color:var(--orange);margin-top:2px;">Objetivo: ${r.goal}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <span class="race-card-status ${r.status==='concluida'?'done':'planned'}">${r.status==='concluida'?'Concluida':'Planejada'}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="history-edit" onclick="editRace(${r.id})" title="Editar">✏️</button>
+          ${!isPrincipal && r.name!=='LiveRun 21km' ? `<button class="history-edit" onclick="deleteRace(${r.id})" title="Remover">🗑️</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ===== EXPORT =====
-function exportData() { const j=JSON.stringify(DATA,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='runcoach_data_'+todayStr()+'.json';a.click();showToast('Exportado!'); }
+function exportData() { const j=JSON.stringify(DATA,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='mota_70_3_data_'+todayStr()+'.json';a.click();showToast('Exportado!'); }
 function resetAllData() { if(confirm('Resetar todos os dados?')) { DATA=JSON.parse(JSON.stringify(DEFAULT_DATA)); saveData(); updateUI(); renderNutrition(); showToast('Dados resetados'); } }
 
 // ===== INIT =====
+DATA = migrateData(DATA);
 deduplicateMeals(); // Clean duplicates on startup
 document.getElementById('logDate').value = todayStr();
+showModalityFields(document.getElementById('logType').value);
+// Default new race date = today + 30d
+const dRaceDefault = new Date(); dRaceDefault.setDate(dRaceDefault.getDate()+30);
+const rd = document.getElementById('raceDate'); if (rd) rd.value = dRaceDefault.toISOString().slice(0,10);
 updateUI();
 renderNutrition();
+renderRaces();
 renderPresets();
 
 // Load from server after initial render (non-blocking, silent)
