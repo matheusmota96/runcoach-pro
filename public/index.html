@@ -1102,6 +1102,8 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
     <div class="section">
       <div class="section-title"><span>&#128229;</span> DADOS</div>
       <button class="btn-primary" onclick="exportData()" style="margin-bottom:8px;">Exportar JSON</button>
+      <input type="file" id="importJsonInput" accept="application/json,.json" style="display:none;" onchange="importDataFromFile(event)">
+      <button class="btn-secondary" onclick="document.getElementById('importJsonInput').click()" style="margin-bottom:8px;">Importar JSON</button>
       <button class="btn-secondary" onclick="resetAllData()">Resetar Dados</button>
     </div>
     <div class="section">
@@ -2911,6 +2913,34 @@ function renderRaces() {
 
 // ===== EXPORT =====
 function exportData() { const j=JSON.stringify(DATA,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='mota_70_3_data_'+todayStr()+'.json';a.click();showToast('Exportado!'); }
+
+async function importDataFromFile(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if (!file) return;
+  let parsed;
+  try {
+    const text = await file.text();
+    parsed = JSON.parse(text);
+  } catch (e) { alert('Arquivo invalido: ' + e.message); return; }
+  if (!parsed || !Array.isArray(parsed.logs) || !Array.isArray(parsed.meals)) {
+    alert('JSON nao tem o formato esperado (precisa de logs[] e meals[])'); return;
+  }
+  const counts = `${parsed.logs.length} treinos, ${parsed.meals.length} refeicoes, ${(parsed.races||[]).length} provas`;
+  if (!confirm(`Importar ${counts}? Os dados serao mesclados com os existentes na conta.`)) return;
+  try {
+    const r = await fetch(API_BASE + '/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(parsed)
+    });
+    if (r.status === 401) { showAuthScreen(); return; }
+    if (!r.ok) { alert('Falha no servidor (' + r.status + ')'); return; }
+    showToast('Importado! Recarregando...');
+    setTimeout(() => location.reload(), 800);
+  } catch (e) { alert('Erro de rede: ' + e.message); }
+}
 function resetAllData() { if(confirm('Resetar todos os dados?')) { DATA=JSON.parse(JSON.stringify(DEFAULT_DATA)); saveData(); updateUI(); renderNutrition(); showToast('Dados resetados'); } }
 
 // ===== THEME =====
