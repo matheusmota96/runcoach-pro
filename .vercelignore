@@ -1,0 +1,10 @@
+node_modules
+.git
+.DS_Store
+*.log
+data
+DEPLOY.md
+README-SETUP.md
+Procfile
+railway.json
+server.js
