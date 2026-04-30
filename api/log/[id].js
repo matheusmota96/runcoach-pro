@@ -1,19 +1,21 @@
 const repo = require('../../lib/repo');
 const { ok, nope, boom, readBody, methodNotAllowed } = require('../../lib/http');
+const { requireAuth } = require('../../lib/auth');
 
 module.exports = async (req, res) => {
   const id = parseInt(req.query.id, 10);
   if (!id) return nope(res, 'invalid id');
+  const user = await requireAuth(req, res); if (!user) return;
   try {
     if (req.method === 'PUT') {
       const body = await readBody(req);
-      await repo.updateLog(id, { ...body, id });
-      const state = await repo.getFullState();
+      await repo.updateLog(user.id, id, { ...body, id });
+      const state = await repo.getFullState(user.id);
       return ok(res, { success: true, data: state });
     }
     if (req.method === 'DELETE') {
-      await repo.deleteLog(id);
-      const state = await repo.getFullState();
+      await repo.deleteLog(user.id, id);
+      const state = await repo.getFullState(user.id);
       return ok(res, { success: true, data: state });
     }
     return methodNotAllowed(res, ['PUT', 'DELETE']);

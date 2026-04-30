@@ -47,12 +47,22 @@ function calcWeekStats(logs) {
 module.exports = async (req, res) => {
   if (!isAuthorized(req)) return unauth(res);
   try {
-    const [athlete, logs] = await Promise.all([repo.getAthlete(), repo.listLogs()]);
-    const phone = (athlete?.phone || '').replace(/\D/g, '');
-    if (!phone) return ok(res, { success: false, reason: 'no phone configured' });
-    const stats = calcWeekStats(logs);
-    await sendWhatsApp(phone, buildWeeklySummary(stats));
-    return ok(res, { success: true, sent: 'weekly', stats });
+    const targets = await repo.listAthletesWithPhone();
+    if (targets.length === 0) return ok(res, { success: false, reason: 'no athletes with phone' });
+    const results = [];
+    for (const { ownerId, athlete } of targets) {
+      const phone = (athlete?.phone || '').replace(/\D/g, '');
+      if (!phone) continue;
+      try {
+        const logs = await repo.listLogs(ownerId);
+        const stats = calcWeekStats(logs);
+        await sendWhatsApp(phone, buildWeeklySummary(stats));
+        results.push({ ownerId, sent: true, stats });
+      } catch (e) {
+        results.push({ ownerId, sent: false, error: e?.message || String(e) });
+      }
+    }
+    return ok(res, { success: true, kind: 'weekly', results });
   } catch (e) {
     return boom(res, e);
   }

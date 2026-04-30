@@ -1,4 +1,5 @@
 // Triggered by Vercel Cron (21:00 America/Sao_Paulo). See vercel.json.
+// Iterates over every user that has an athlete row with a phone configured.
 
 const { sendWhatsApp } = require('../../lib/whatsapp');
 const { buildEveningMessage } = require('../../lib/messages');
@@ -15,11 +16,20 @@ function isAuthorized(req) {
 module.exports = async (req, res) => {
   if (!isAuthorized(req)) return unauth(res);
   try {
-    const athlete = await repo.getAthlete();
-    const phone = (athlete?.phone || '').replace(/\D/g, '');
-    if (!phone) return ok(res, { success: false, reason: 'no phone configured' });
-    await sendWhatsApp(phone, buildEveningMessage());
-    return ok(res, { success: true, sent: 'evening' });
+    const targets = await repo.listAthletesWithPhone();
+    if (targets.length === 0) return ok(res, { success: false, reason: 'no athletes with phone' });
+    const results = [];
+    for (const { ownerId, athlete } of targets) {
+      const phone = (athlete?.phone || '').replace(/\D/g, '');
+      if (!phone) continue;
+      try {
+        await sendWhatsApp(phone, buildEveningMessage());
+        results.push({ ownerId, sent: true });
+      } catch (e) {
+        results.push({ ownerId, sent: false, error: e?.message || String(e) });
+      }
+    }
+    return ok(res, { success: true, kind: 'evening', results });
   } catch (e) {
     return boom(res, e);
   }

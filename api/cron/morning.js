@@ -1,17 +1,13 @@
 // Triggered by Vercel Cron (07:00 America/Sao_Paulo). See vercel.json.
-// Vercel forwards cron requests with header `x-vercel-cron`.
+// Iterates over every user that has an athlete row with a phone configured.
 
 const { sendWhatsApp } = require('../../lib/whatsapp');
 const { buildMorningMessage } = require('../../lib/messages');
 const repo = require('../../lib/repo');
 const { ok, boom, unauth } = require('../../lib/http');
 
-function isVercelCron(req) {
-  // Vercel sets these on cron-triggered requests
-  return !!req.headers['x-vercel-cron'] || !!req.headers['x-vercel-signature'];
-}
 function isAuthorized(req) {
-  if (isVercelCron(req)) return true;
+  if (req.headers['x-vercel-cron'] || req.headers['x-vercel-signature']) return true;
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) return false;
   return (req.query?.key || req.headers['x-cron-secret']) === cronSecret;
@@ -20,11 +16,20 @@ function isAuthorized(req) {
 module.exports = async (req, res) => {
   if (!isAuthorized(req)) return unauth(res);
   try {
-    const athlete = await repo.getAthlete();
-    const phone = (athlete?.phone || '').replace(/\D/g, '');
-    if (!phone) return ok(res, { success: false, reason: 'no phone configured' });
-    await sendWhatsApp(phone, buildMorningMessage());
-    return ok(res, { success: true, sent: 'morning' });
+    const targets = await repo.listAthletesWithPhone();
+    if (targets.length === 0) return ok(res, { success: false, reason: 'no athletes with phone' });
+    const results = [];
+    for (const { ownerId, athlete } of targets) {
+      const phone = (athlete?.phone || '').replace(/\D/g, '');
+      if (!phone) continue;
+      try {
+        await sendWhatsApp(phone, buildMorningMessage());
+        results.push({ ownerId, sent: true });
+      } catch (e) {
+        results.push({ ownerId, sent: false, error: e?.message || String(e) });
+      }
+    }
+    return ok(res, { success: true, kind: 'morning', results });
   } catch (e) {
     return boom(res, e);
   }
