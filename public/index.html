@@ -527,10 +527,81 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
 .electro-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
 .electro-value { font-size:15px; font-weight:700; color:var(--cyan); }
 .electro-detail { font-size:11px; color:var(--text2); margin-top:2px; }
+
+/* ===== AUTH SCREEN ===== */
+.auth-overlay {
+  position:fixed; inset:0; z-index:9999; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; padding:24px;
+}
+.auth-card {
+  width:100%; max-width:380px; background:var(--bg2); border-radius:var(--radius, 16px);
+  padding:28px 24px; box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.auth-logo {
+  text-align:center; font-size:22px; font-weight:800; color:var(--accent);
+  margin-bottom:6px; letter-spacing:0.5px;
+}
+.auth-sub  { text-align:center; font-size:13px; color:var(--text2); margin-bottom:22px; }
+.auth-tabs { display:flex; background:var(--bg3); border-radius:10px; padding:4px; margin-bottom:18px; }
+.auth-tabs button {
+  flex:1; padding:9px 0; background:transparent; border:none; color:var(--text2);
+  font-size:14px; font-weight:600; border-radius:8px; cursor:pointer;
+}
+.auth-tabs button.active { background:var(--accent); color:#fff; }
+.auth-form { display:none; flex-direction:column; gap:12px; }
+.auth-form.active { display:flex; }
+.auth-form label  { font-size:12px; color:var(--text2); margin-bottom:-6px; }
+.auth-form input  {
+  background:var(--bg3); border:1px solid var(--bg3); color:var(--text);
+  padding:11px 12px; border-radius:10px; font-size:15px; outline:none;
+}
+.auth-form input:focus { border-color:var(--accent); }
+.auth-form button[type="submit"] {
+  background:var(--accent); color:#fff; border:none; padding:12px;
+  border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; margin-top:6px;
+}
+.auth-form button[type="submit"]:disabled { opacity:0.6; cursor:not-allowed; }
+.auth-error { color:var(--red); font-size:13px; min-height:18px; text-align:center; }
+.auth-foot { text-align:center; font-size:12px; color:var(--text3); margin-top:16px; }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+
+<!-- AUTH GATE — shown until /api/auth/me returns 200 -->
+<div class="auth-overlay" id="authScreen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">Mota 70.3 Coach</div>
+    <div class="auth-sub">Entre para sincronizar treinos e nutricao</div>
+    <div class="auth-tabs">
+      <button id="authTabLogin"  class="active" onclick="switchAuthTab('login')">Entrar</button>
+      <button id="authTabSignup"             onclick="switchAuthTab('signup')">Cadastrar</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active" onsubmit="return doLogin(event)">
+      <label>Email</label>
+      <input type="email" name="email" autocomplete="email" required>
+      <label>Senha</label>
+      <input type="password" name="password" autocomplete="current-password" required minlength="8">
+      <div class="auth-error" id="loginErr"></div>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <form id="signupForm" class="auth-form" onsubmit="return doSignup(event)">
+      <label>Nome</label>
+      <input type="text" name="name" autocomplete="name">
+      <label>Email</label>
+      <input type="email" name="email" autocomplete="email" required>
+      <label>Senha (min. 8 caracteres)</label>
+      <input type="password" name="password" autocomplete="new-password" required minlength="8">
+      <div class="auth-error" id="signupErr"></div>
+      <button type="submit">Criar conta</button>
+    </form>
+
+    <div class="auth-foot">Sessao persistente por 30 dias</div>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none;">
   <!-- HEADER -->
   <div class="header">
     <div class="brand-logo">
@@ -1032,6 +1103,16 @@ textarea.form-input { resize:vertical; min-height:70px; font-family:inherit; }
       <div class="section-title"><span>&#128229;</span> DADOS</div>
       <button class="btn-primary" onclick="exportData()" style="margin-bottom:8px;">Exportar JSON</button>
       <button class="btn-secondary" onclick="resetAllData()">Resetar Dados</button>
+    </div>
+    <div class="section">
+      <div class="section-title"><span>&#128100;</span> CONTA</div>
+      <div class="analysis-card">
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Email</span><span id="acctEmail" style="font-weight:700;">-</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Papel</span><span id="acctRole"  style="font-weight:700;">-</span></div>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="doLogout()" style="margin-top:10px;">Sair</button>
     </div>
   </div>
 
@@ -1643,9 +1724,11 @@ async function syncToServer() {
     const res = await fetch(API_BASE + '/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(DATA)
     });
-    if (!res.ok) console.warn('Sync failed:', res.status);
+    if (res.status === 401) { CURRENT_USER = null; showAuthScreen(); }
+    else if (!res.ok) console.warn('Sync failed:', res.status);
   } catch(e) {
     // Offline - data is safe in localStorage
     console.warn('Offline - data saved locally');
@@ -1673,7 +1756,8 @@ function deduplicateMeals() {
 
 async function loadFromServer(silent) {
   try {
-    const res = await fetch(API_BASE + '/api/data', { cache: 'no-store' });
+    const res = await fetch(API_BASE + '/api/data', { cache: 'no-store', credentials: 'include' });
+    if (res.status === 401) { CURRENT_USER = null; showAuthScreen(); return; }
     if (res.ok) {
       const serverData = await res.json();
       if (serverData && serverData.logs && serverData.meals) {
@@ -1730,7 +1814,7 @@ async function fullRefresh() {
 
 // Auto-refresh when app comes back to foreground (iPhone PWA / tab switch)
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
+  if (document.visibilityState === 'visible' && CURRENT_USER) {
     console.log('App visible - refreshing data');
     fullRefresh();
   }
@@ -1738,7 +1822,7 @@ document.addEventListener('visibilitychange', () => {
 
 // Auto-refresh every 30 minutes while app is open
 setInterval(() => {
-  if (document.visibilityState === 'visible') {
+  if (document.visibilityState === 'visible' && CURRENT_USER) {
     loadFromServer(true);
   }
 }, 30 * 60 * 1000);
@@ -2851,22 +2935,127 @@ function loadTheme() {
   setTheme(saved);
 }
 
-// ===== INIT =====
-loadTheme();
-DATA = migrateData(DATA);
-deduplicateMeals(); // Clean duplicates on startup
-document.getElementById('logDate').value = todayStr();
-showModalityFields(document.getElementById('logType').value);
-// Default new race date = today + 30d
-const dRaceDefault = new Date(); dRaceDefault.setDate(dRaceDefault.getDate()+30);
-const rd = document.getElementById('raceDate'); if (rd) rd.value = dRaceDefault.toISOString().slice(0,10);
-updateUI();
-renderNutrition();
-renderRaces();
-renderPresets();
+// ===== AUTH =====
+let CURRENT_USER = null;
 
-// Load from server after initial render (non-blocking, silent)
-loadFromServer(true);
+function showAuthScreen() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+function hideAuthScreen() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+}
+function switchAuthTab(which) {
+  const isLogin = which === 'login';
+  document.getElementById('authTabLogin').classList.toggle('active', isLogin);
+  document.getElementById('authTabSignup').classList.toggle('active', !isLogin);
+  document.getElementById('loginForm').classList.toggle('active', isLogin);
+  document.getElementById('signupForm').classList.toggle('active', !isLogin);
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('signupErr').textContent = '';
+}
+
+async function authPost(path, body) {
+  const r = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body)
+  });
+  let j = {}; try { j = await r.json(); } catch(e) {}
+  return { ok: r.ok, status: r.status, body: j };
+}
+
+async function doLogin(ev) {
+  ev.preventDefault();
+  const f = ev.target;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  try {
+    const { ok, body } = await authPost('/api/auth/login', {
+      email: f.email.value, password: f.password.value
+    });
+    if (!ok) { errEl.textContent = body.error || 'Falha no login'; return false; }
+    CURRENT_USER = body.user;
+    hideAuthScreen(); await bootApp();
+  } finally { btn.disabled = false; }
+  return false;
+}
+
+async function doSignup(ev) {
+  ev.preventDefault();
+  const f = ev.target;
+  const errEl = document.getElementById('signupErr');
+  errEl.textContent = '';
+  const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  try {
+    const { ok, body } = await authPost('/api/auth/signup', {
+      email: f.email.value, password: f.password.value, name: f.name.value
+    });
+    if (!ok) { errEl.textContent = body.error || 'Falha no cadastro'; return false; }
+    CURRENT_USER = body.user;
+    if (body.claimed) {
+      const c = body.claimed;
+      console.log(`Auto-claim aplicado: ${c.logs} treinos, ${c.meals} refeicoes, ${c.races} provas, ${c.athlete} atleta`);
+    }
+    hideAuthScreen(); await bootApp();
+  } finally { btn.disabled = false; }
+  return false;
+}
+
+async function doLogout() {
+  try { await fetch(API_BASE + '/api/auth/logout', { method:'POST', credentials:'include' }); } catch(e) {}
+  CURRENT_USER = null;
+  try { localStorage.removeItem('runcoach_data'); } catch(e) {}
+  location.reload();
+}
+
+async function checkSession() {
+  try {
+    const r = await fetch(API_BASE + '/api/auth/me', { credentials:'include', cache:'no-store' });
+    if (r.ok) {
+      const j = await r.json();
+      CURRENT_USER = j.user;
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function renderAccountInfo() {
+  if (!CURRENT_USER) return;
+  const e = document.getElementById('acctEmail');
+  const r = document.getElementById('acctRole');
+  if (e) e.textContent = CURRENT_USER.email || '-';
+  if (r) r.textContent = CURRENT_USER.role  || 'user';
+}
+
+// ===== INIT =====
+async function bootApp() {
+  loadTheme();
+  DATA = migrateData(DATA);
+  deduplicateMeals();
+  document.getElementById('logDate').value = todayStr();
+  showModalityFields(document.getElementById('logType').value);
+  const dRaceDefault = new Date(); dRaceDefault.setDate(dRaceDefault.getDate()+30);
+  const rd = document.getElementById('raceDate'); if (rd) rd.value = dRaceDefault.toISOString().slice(0,10);
+  updateUI();
+  renderNutrition();
+  renderRaces();
+  renderPresets();
+  renderAccountInfo();
+  loadFromServer(true);
+}
+
+(async () => {
+  loadTheme();
+  const authed = await checkSession();
+  if (!authed) { showAuthScreen(); return; }
+  hideAuthScreen();
+  await bootApp();
+})();
 </script>
 </body>
 </html>
