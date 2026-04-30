@@ -1,0 +1,30 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/log/:id",  "destination": "/api/log/[id]" },
+    { "source": "/api/meal/:id", "destination": "/api/meal/[id]" },
+    { "source": "/api/race/:id", "destination": "/api/race/[id]" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ],
+  "crons": [
+    { "path": "/api/cron/morning", "schedule": "0 10 * * *" },
+    { "path": "/api/cron/evening", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/weekly",  "schedule": "0 23 * * 0" }
+  ]
+}
